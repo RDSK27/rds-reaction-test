@@ -560,6 +560,21 @@ footer {
       });
     }
   </script>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBbEgbWddPt_rhPM24bL_Nacp7TAlh1biM",
+      authDomain: "rds-reaction-test.firebaseapp.com",
+      projectId: "rds-reaction-test",
+      storageBucket: "rds-reaction-test.firebasestorage.app",
+      messagingSenderId: "490684952529",
+      appId: "1:490684952529:web:bb53a9813bd58ecdb3baf0"
+    };
+    firebase.initializeApp(firebaseConfig);
+    var db = firebase.firestore();
+  </script>
 </head>
 <body>
 
@@ -889,6 +904,13 @@ function saveRanking(r,list,mode,pulse){
   var key=getRankingKey(r,mode,pulse);
   try{localStorage.setItem(key,JSON.stringify(list));}catch(e){}
 }
+function saveEntryToFirebase(r,entry,mode,pulse){
+  var col='rank_'+r+'_'+(mode||'normal')+'_'+(pulse||'press');
+  entry.ts=Date.now();
+  if(typeof db!=='undefined'){
+    db.collection(col).add(entry).catch(function(e){console.error('Firebase:',e);});
+  }
+}
 function addToRanking(r,name,avg,mode,completedRounds){
   var pulse=pulseMode||'press';
   var list=getRanking(r,mode,pulse);
@@ -907,6 +929,10 @@ function addToRanking(r,name,avg,mode,completedRounds){
   }
   if(list.length>15)list=list.slice(0,15);
   saveRanking(r,list,mode,pulse);
+  // Guardar en Firebase
+  var fbEntry={name:name,avg:avg,date:new Date().toLocaleDateString('es-ES'),mode:mode||'normal'};
+  if(mode==='limite') fbEntry.completed=completedRounds||r;
+  saveEntryToFirebase(r,fbEntry,mode,pulse);
 }
 
 function showScreen(name){
@@ -1656,15 +1682,11 @@ function showRankPulse(p){
   document.getElementById('rpulse-release2i').className='rank-tab'+(p==='release2i'?' active':'');
   renderFullRanking(activeRankTab,activeRankMode,activeRankPulse);
 }
-function renderFullRanking(r,mode,pulse){
-  var m=mode||'normal';
-  var p=pulse||'press';
-  var list=getRanking(r,m,p);
-  var el=document.getElementById('rank-full-list');
+function renderRankList(list, el, m){
   el.innerHTML='';
   if(!list.length){
     var d=document.createElement('div');d.className='rank-full-empty';
-    d.textContent='Sin resultados para '+r+' rondas ('+m+')';el.appendChild(d);return;
+    d.textContent='Sin resultados';el.appendChild(d);return;
   }
   var medals=['gold','silver','bronze'];
   for(var i=0;i<list.length;i++){
@@ -1679,6 +1701,32 @@ function renderFullRanking(r,mode,pulse){
     }
     var dt=document.createElement('div');dt.className='rank-full-date';dt.textContent=list[i].date||'';
     row.appendChild(pos);row.appendChild(nm);row.appendChild(ms);row.appendChild(dt);el.appendChild(row);
+  }
+}
+
+function renderFullRanking(r,mode,pulse){
+  var m=mode||'normal';
+  var p=pulse||'press';
+  var el=document.getElementById('rank-full-list');
+  el.innerHTML='<div class="rank-full-empty">Cargando...</div>';
+  var col='rank_'+r+'_'+m+'_'+p;
+  if(typeof db!=='undefined'){
+    var query=db.collection(col);
+    if(m==='limite'){
+      query=query.orderBy('completed','desc').orderBy('avg','asc').limit(15);
+    } else {
+      query=query.orderBy('avg','asc').limit(15);
+    }
+    query.get().then(function(snap){
+      var list=[];
+      snap.forEach(function(doc){ list.push(doc.data()); });
+      renderRankList(list,el,m);
+    }).catch(function(){
+      // Fallback localStorage
+      renderRankList(getRanking(r,m,p),el,m);
+    });
+  } else {
+    renderRankList(getRanking(r,m,p),el,m);
   }
 }
 function goToFullRanking(){
