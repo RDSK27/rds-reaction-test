@@ -127,7 +127,7 @@ header img { width:100%; max-width:320px; height:auto; display:block; margin-bot
 .ranking-empty { text-align:center; padding:24px; font-size:0.6rem; color:#ccc; letter-spacing:0.12em; }
 
 /* SELECTOR */
-.selector-wrap { background:var(--bg-page); background:#fff; padding:8px 14px; display:flex; flex-direction:column; gap:6px; }
+.selector-wrap { background:#fff; padding:2px 14px; display:flex; flex-direction:column; gap:2px; }
 .selector-label {
   font-size:0.56rem; letter-spacing:0.25em;
   color:#aaa; text-transform:uppercase;
@@ -158,7 +158,7 @@ header img { width:100%; max-width:320px; height:auto; display:block; margin-bot
   border-radius:6px;
   box-shadow:0 6px 20px rgba(0,0,0,0.35);
   transition:transform 0.12s,box-shadow 0.12s;
-  margin-top:16px;
+  margin-top:32px;
 }
 .btn-primary:active{transform:translateY(3px);box-shadow:0 2px 8px rgba(176,48,32,0.2);}
 
@@ -474,7 +474,7 @@ header img { width:100%; max-width:320px; height:auto; display:block; margin-bot
   cursor:pointer; text-align:center;
   border-radius:6px;
   transition:transform 0.12s;
-  margin-top:8px;
+  margin-top:0;
 }
 .btn-ranking:active{transform:translateY(3px);}
 
@@ -486,21 +486,23 @@ header img { width:100%; max-width:320px; height:auto; display:block; margin-bot
   background:#fff; padding:18px 14px 14px;
   border-bottom:3px solid #b03020;
 }
-.rank-tabs { display:flex; margin-bottom:6px; }
-.rank-tab { background:#fff; color:#999; border-color:var(--border-color);
-  flex:1; padding:10px 4px;
-  font-size:0.62rem; letter-spacing:0.08em;
+.rank-tabs { display:flex; margin-bottom:0; margin-top:0; }
+.rank-tab {
+  flex:1; padding:5px 4px;
+  font-size:0.58rem; letter-spacing:0.06em;
   text-align:center; cursor:pointer;
   color:#999; font-weight:700;
   text-transform:uppercase;
   background:#fff;
   border:1px solid #ddd;
   border-right:none;
+  border-bottom:none;
 }
+.rank-tabs:last-of-type .rank-tab { border-bottom:1px solid #ddd; }
 .rank-tab:last-child { border-right:1px solid #ddd; }
 .seg-btn-disabled { opacity:0.35; pointer-events:none; }
 .rank-tab.active { color:#fff; background:#b03020; border-color:#b03020; }
-#rpulse-press.active, #rpulse-press2.active, #rpulse-press2i.active, #rpulse-release.active, #rpulse-release2.active, #rpulse-release2i.active { background:#111; border-color:#111; color:#fff; }
+#rpulse-press.active, #rpulse-press2.active, #rpulse-press2i.active, #rpulse-release.active, #rpulse-release2.active, #rpulse-release2i.active { background:#b03020; border-color:#b03020; color:#fff; }
 .rank-full-list { background:#fff; }
 .rank-full-row {
   display:flex; align-items:center; gap:8px;
@@ -514,11 +516,13 @@ header img { width:100%; max-width:320px; height:auto; display:block; margin-bot
 .rank-full-ms { font-size:0.72rem; font-weight:900; color:#b03020; }
 .rank-full-date { color:#999; font-size:0.5rem; color:#ccc; }
 .rank-full-empty { color:#999; text-align:center; padding:24px; font-size:0.62rem; color:#ccc; letter-spacing:0.1em; }
-.rank-back-btn { background:#fff; color:#999; border-color:var(--border-color);
-  width:100%; padding:14px;
-  background:#b03020; color:#fff; border:none;
-  font-size:0.8rem; font-weight:900;
-  letter-spacing:0.16em; cursor:pointer; text-transform:uppercase;
+.rank-back-btn {
+  width:100%; padding:8px;
+  background:#fff; color:#b03020;
+  border:1px solid #ddd;
+  font-size:0.72rem; font-weight:900;
+  letter-spacing:0.14em; text-transform:uppercase;
+  cursor:pointer;
 }
 
 footer {
@@ -558,7 +562,7 @@ footer {
   display:flex;
   flex-direction:column;
   align-items:center;
-  padding:3px 16px 5px;
+  padding:0 16px 5px;
   box-sizing:border-box;
   gap:0;
 }
@@ -639,6 +643,14 @@ footer {
 
   <div class="action-row">
     <div class="selector-wrap">
+    <div class="selector-label">Sonido</div>
+    <div class="seg-group">
+      <button class="seg-btn active" id="sound-btn-on" onclick="setSoundMode(true)">&#128276; Con sonido</button>
+      <button class="seg-btn" id="sound-btn-off" onclick="setSoundMode(false)">&#128277; Sin sonido</button>
+    </div>
+  </div>
+
+  <div class="selector-wrap">
     <div class="selector-label">Opcion de pulsado</div>
     <div class="seg-group">
       <button class="seg-btn active" id="pulse-btn-press" onclick="setPulseMode('press')">Bajar</button>
@@ -653,14 +665,12 @@ footer {
   </div>
 
   <button class="btn-primary" ontouchend="event.stopPropagation();" onclick="playClick();startGame()">Iniciar Test</button>
-    <button class="btn-ranking" onclick="showFullRanking()">&#127942; Ranking</button>
-  </div>
-
-
-  <!-- Campo nombre -->
+  <button class="btn-ranking" onclick="showFullRanking()">&#127942; Ranking</button>
   <div id="user-name-bar">
     <input id="user-name-input" type="text" maxlength="20" placeholder="Nombre" oninput="this.value=this.value.toUpperCase()">
     <button id="user-save-btn" onclick="saveUserName()">Guardar</button>
+  </div>
+  
   </div>
 </div>
 
@@ -764,12 +774,22 @@ footer {
 <!-- FULL RANKING -->
 <div class="screen" id="screen-ranking">
   <div class="rank-screen-title">Ranking completo</div>
-  <div class="rank-tabs" style="margin-bottom:6px;">
+  <div class="rank-tabs" style="margin-bottom:0;">
     <button class="rank-tab active" id="rmode-normal" onclick="showRankMode('normal')">Normal</button>
     <button class="rank-tab" id="rmode-distractor" onclick="showRankMode('distractor')">Distractor</button>
     <button class="rank-tab" id="rmode-limite" onclick="showRankMode('limite')">Limite</button>
   </div>
-  <div class="rank-tabs" style="margin-bottom:6px;">
+  <div class="rank-tabs" style="margin-bottom:0;margin-top:-1px;">
+    <button class="rank-tab active" id="rtab10" onclick="showRankTab(10)">10</button>
+    <button class="rank-tab" id="rtab15" onclick="showRankTab(15)">15</button>
+    <button class="rank-tab" id="rtab30" onclick="showRankTab(30)">30</button>
+    <button class="rank-tab" id="rtab50" onclick="showRankTab(50)">50</button>
+  </div>
+  <div class="rank-tabs" style="margin-bottom:0;margin-top:-1px;">
+    <button class="rank-tab active" id="rsound-on" onclick="showRankSound(true)">Con sonido</button>
+    <button class="rank-tab" id="rsound-off" onclick="showRankSound(false)">Sin sonido</button>
+  </div>
+  <div class="rank-tabs" style="margin-bottom:0;margin-top:-1px;">
     <button class="rank-tab active" id="rpulse-press" onclick="showRankPulse('press')">Bajar</button>
     <button class="rank-tab" id="rpulse-press2" onclick="showRankPulse('press2')">Bajar 2</button>
     <button class="rank-tab" id="rpulse-press2i" onclick="showRankPulse('press2i')">Bajar 2*</button>
@@ -777,19 +797,13 @@ footer {
     <button class="rank-tab" id="rpulse-release2" onclick="showRankPulse('release2')">Subir 2</button>
     <button class="rank-tab" id="rpulse-release2i" onclick="showRankPulse('release2i')">Subir 2*</button>
   </div>
-  <div class="rank-tabs">
-    <button class="rank-tab active" id="rtab10" onclick="showRankTab(10)">10</button>
-    <button class="rank-tab" id="rtab15" onclick="showRankTab(15)">15</button>
-    <button class="rank-tab" id="rtab30" onclick="showRankTab(30)">30</button>
-    <button class="rank-tab" id="rtab50" onclick="showRankTab(50)">50</button>
-  </div>
   <div class="rank-full-list" id="rank-full-list"></div>
   <div style="display:flex; gap:10px; width:100%; padding:0 16px; box-sizing:border-box;">
     <button class="rank-back-btn" style="flex:1;" onclick="goHome()">&#8592; Inicio</button>
     <button class="rank-back-btn" style="flex:1;" onclick="repeatGame()">↺ Repetir</button>
   </div>
   <div style="display:flex; justify-content:center; padding:8px 16px 0;">
-    <button id="btn-hide-repeated" class="rank-back-btn" style="width:60%; font-size:0.65rem;" onclick="toggleHideRepeated()">Ocultar repetidos</button>
+    <button id="btn-hide-repeated" style="width:60%; padding:7px; font-size:0.65rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; background:#111; color:#fff; border:none; cursor:pointer; border-radius:4px;" onclick="toggleHideRepeated()">Ocultar repetidos</button>
   </div>
 </div>
 
@@ -809,7 +823,7 @@ function saveUserName(){
 
 </script>
 <script>
-var appState='idle',startTime=0,waitTimer=null,results=[],totalRounds=10,validRounds=0,currentAvg=0,savedName='',activeRankingTab=5;
+var appState='idle',startTime=0,waitTimer=null,results=[],totalRounds=10,validRounds=0,currentAvg=0,savedName='',activeRankingTab=10;
 var fingerDown=false,releaseReady=false,r2ActiveSide='',r2FingerLeft=false,r2FingerRight=false;
 var gameMode='normal';
 var pulseMode='press';
@@ -833,27 +847,53 @@ var limiteCurrentIdx=0;
 var limiteRoundsCompleted=0;
 
 var LIMITES={
-  '10': [280, 268, 256, 243, 231, 219, 207, 194, 182, 170],
-  '15': [300, 291, 281, 272, 263, 254, 244, 235, 226, 216, 207, 198, 189, 179, 170],
-  '30': [300, 296, 291, 287, 282, 278, 273, 269, 264, 260, 255, 251, 246, 242, 237, 233, 228, 224, 219, 215, 210, 206, 201, 197, 192, 188, 183, 179, 174, 170],
-  '50': [300, 297, 295, 292, 289, 287, 284, 281, 279, 276, 273, 271, 268, 266, 263, 260, 258, 255, 252, 250, 247, 244, 242, 239, 236, 234, 231, 228, 226, 223, 220, 218, 215, 212, 210, 207, 204, 202, 199, 197, 194, 191, 189, 186, 183, 181, 178, 175, 173, 170]
+  '10': [280, 262, 243, 225, 207, 188, 170, 170, 170, 170],
+  '15': [300, 286, 271, 257, 242, 228, 213, 199, 184, 170, 170, 170, 170, 170, 170],
+  '30': [300, 295, 289, 284, 278, 273, 268, 262, 257, 251, 246, 240, 235, 230, 224, 219, 213, 208, 202, 197, 192, 186, 181, 175, 170, 170, 170, 170, 170, 170],
+  '50': [300, 297, 294, 291, 288, 285, 282, 279, 276, 273, 270, 268, 265, 262, 259, 256, 253, 250, 247, 244, 241, 238, 235, 232, 229, 226, 223, 220, 217, 214, 211, 208, 205, 202, 200, 197, 194, 191, 188, 185, 182, 179, 176, 173, 170, 170, 170, 170, 170, 170]
 };
 var LIMITES_RELEASE={
-  '10': [240, 230, 220, 210, 200, 190, 180, 170, 160, 150],
-  '15': [275, 266, 257, 248, 239, 230, 221, 212, 204, 195, 186, 177, 168, 159, 150],
-  '30': [275, 271, 266, 262, 258, 253, 249, 245, 241, 236, 232, 228, 223, 219, 215, 210, 206, 202, 197, 193, 189, 184, 180, 176, 172, 167, 163, 159, 154, 150],
-  '50': [275, 272, 270, 267, 265, 262, 260, 257, 255, 252, 249, 247, 244, 242, 239, 237, 234, 232, 229, 227, 224, 221, 219, 216, 214, 211, 209, 206, 204, 201, 198, 196, 193, 191, 188, 186, 183, 181, 178, 176, 173, 170, 168, 165, 163, 160, 158, 155, 153, 150]
+  '10': [240, 225, 210, 195, 180, 165, 150, 150, 150, 150],
+  '15': [275, 261, 247, 233, 219, 206, 192, 178, 164, 150, 150, 150, 150, 150, 150],
+  '30': [275, 270, 265, 259, 254, 249, 244, 239, 233, 228, 223, 218, 212, 207, 202, 197, 192, 186, 181, 176, 171, 166, 160, 155, 150, 150, 150, 150, 150, 150],
+  '50': [275, 272, 269, 266, 264, 261, 258, 255, 252, 249, 247, 244, 241, 238, 235, 232, 230, 227, 224, 221, 218, 215, 212, 210, 207, 204, 201, 198, 195, 193, 190, 187, 184, 181, 178, 176, 173, 170, 167, 164, 161, 159, 156, 153, 150, 150, 150, 150, 150, 150]
 };
 var LIMITES_RELEASE2={
-  '10': [280, 268, 256, 243, 231, 219, 207, 194, 182, 170],
-  '15': [300, 291, 281, 272, 263, 254, 244, 235, 226, 216, 207, 198, 189, 179, 170],
-  '30': [300, 296, 291, 287, 282, 278, 273, 269, 264, 260, 255, 251, 246, 242, 237, 233, 228, 224, 219, 215, 210, 206, 201, 197, 192, 188, 183, 179, 174, 170],
-  '50': [300, 297, 295, 292, 289, 287, 284, 281, 279, 276, 273, 271, 268, 266, 263, 260, 258, 255, 252, 250, 247, 244, 242, 239, 236, 234, 231, 228, 226, 223, 220, 218, 215, 212, 210, 207, 204, 202, 199, 197, 194, 191, 189, 186, 183, 181, 178, 175, 173, 170]
+  '10': [280, 262, 243, 225, 207, 188, 170, 170, 170, 170],
+  '15': [300, 286, 271, 257, 242, 228, 213, 199, 184, 170, 170, 170, 170, 170, 170],
+  '30': [300, 295, 289, 284, 278, 273, 268, 262, 257, 251, 246, 240, 235, 230, 224, 219, 213, 208, 202, 197, 192, 186, 181, 175, 170, 170, 170, 170, 170, 170],
+  '50': [300, 297, 294, 291, 288, 285, 282, 279, 276, 273, 270, 268, 265, 262, 259, 256, 253, 250, 247, 244, 241, 238, 235, 232, 229, 226, 223, 220, 217, 214, 211, 208, 205, 202, 200, 197, 194, 191, 188, 185, 182, 179, 176, 173, 170, 170, 170, 170, 170, 170]
+};
+
+// Límites SIN SONIDO
+var LIMITES_NS={
+  '10': [280, 265, 250, 235, 220, 205, 190, 190, 190, 190],
+  '15': [300, 288, 276, 263, 251, 239, 227, 214, 202, 190, 190, 190, 190, 190, 190],
+  '30': [300, 295, 291, 286, 282, 277, 272, 268, 263, 259, 254, 250, 245, 240, 236, 231, 227, 222, 218, 213, 208, 204, 199, 195, 190, 190, 190, 190, 190, 190],
+  '50': [300, 298, 295, 292, 290, 288, 285, 282, 280, 278, 275, 272, 270, 268, 265, 262, 260, 258, 255, 252, 250, 248, 245, 242, 240, 238, 235, 232, 230, 228, 225, 222, 220, 218, 215, 212, 210, 208, 205, 202, 200, 198, 195, 192, 190, 190, 190, 190, 190, 190]
+};
+var LIMITES_RELEASE_NS={
+  '10': [240, 228, 217, 205, 193, 182, 170, 170, 170, 170],
+  '15': [275, 263, 252, 240, 228, 217, 205, 193, 182, 170, 170, 170, 170, 170, 170],
+  '30': [275, 271, 266, 262, 258, 253, 249, 244, 240, 236, 231, 227, 222, 218, 214, 209, 205, 201, 196, 192, 188, 183, 179, 174, 170, 170, 170, 170, 170, 170],
+  '50': [275, 273, 270, 268, 265, 263, 261, 258, 256, 254, 251, 249, 246, 244, 242, 239, 237, 234, 232, 230, 227, 225, 222, 220, 218, 215, 213, 211, 208, 206, 203, 201, 199, 196, 194, 191, 189, 187, 184, 182, 180, 177, 175, 172, 170, 170, 170, 170, 170, 170]
+};
+var LIMITES_RELEASE2_NS={
+  '10': [280, 265, 250, 235, 220, 205, 190, 190, 190, 190],
+  '15': [300, 288, 276, 263, 251, 239, 227, 214, 202, 190, 190, 190, 190, 190, 190],
+  '30': [300, 295, 291, 286, 282, 277, 272, 268, 263, 259, 254, 250, 245, 240, 236, 231, 227, 222, 218, 213, 208, 204, 199, 195, 190, 190, 190, 190, 190, 190],
+  '50': [300, 298, 295, 292, 290, 288, 285, 282, 280, 278, 275, 272, 270, 268, 265, 262, 260, 258, 255, 252, 250, 248, 245, 242, 240, 238, 235, 232, 230, 228, 225, 222, 220, 218, 215, 212, 210, 208, 205, 202, 200, 198, 195, 192, 190, 190, 190, 190, 190, 190]
 };
 
 function initLimiteMode(){
-  var src=pulseMode==='release'?LIMITES_RELEASE:(pulseMode==='release2'?LIMITES_RELEASE2:LIMITES);
-  limiteLimits=(src[totalRounds]||src[5]).slice();
+  var isRelease=pulseMode==='release'||pulseMode==='release2i';
+  var isRelease2=pulseMode==='release2';
+  if(soundMode){
+    var src=isRelease?LIMITES_RELEASE:(isRelease2?LIMITES_RELEASE2:LIMITES);
+  } else {
+    var src=isRelease?LIMITES_RELEASE_NS:(isRelease2?LIMITES_RELEASE2_NS:LIMITES_NS);
+  }
+  limiteLimits=(src[totalRounds]||src['10']).slice();
   limiteCurrentIdx=0;
   limiteRoundsCompleted=0;
 }
@@ -889,6 +929,16 @@ function restoreBest(){
 function setMode(m){
   if(!audioCtx) initAudio();
   gameMode=m;
+  var son=document.getElementById('sound-btn-on');
+  var soff=document.getElementById('sound-btn-off');
+  if(m==='distractor'){
+    // En distractor siempre sin sonido de estimulo, atenuar botones
+    if(son){son.style.opacity='0.35';son.style.pointerEvents='none';}
+    if(soff){soff.style.opacity='0.35';soff.style.pointerEvents='none';}
+  } else {
+    if(son){son.style.opacity='';son.style.pointerEvents='';}
+    if(soff){soff.style.opacity='';soff.style.pointerEvents='';}
+  }
   // Si distractor seleccionado con press2 o release2, volver a press
   if(m==='distractor' && (pulseMode==='release2'||pulseMode==='press2'||pulseMode==='press2i'||pulseMode==='release2i')){
     pulseMode='press';
@@ -945,7 +995,8 @@ function showActions(show){arenaActions.style.display=show?'flex':'none';arena.s
 function getRanking(r){try{var d=localStorage.getItem('rds_rank_'+r);return d?JSON.parse(d):[];}catch(e){return[];}}
 function saveRanking(r,list){try{localStorage.setItem('rds_rank_'+r,JSON.stringify(list));}catch(e){}}
 function getRankingKey(rounds,mode,pulse){
-  return 'rds_rank_'+rounds+'_'+(mode||'normal')+'_'+(pulse||'press');
+  var s=soundMode?'sound':'nosound';
+  return 'rds_rank_'+rounds+'_'+(mode||'normal')+'_'+(pulse||'press')+'_'+s;
 }
 function getRanking(r,mode,pulse){
   var key=getRankingKey(r,mode,pulse);
@@ -956,7 +1007,8 @@ function saveRanking(r,list,mode,pulse){
   try{localStorage.setItem(key,JSON.stringify(list));}catch(e){}
 }
 function saveEntryToFirebase(r,entry,mode,pulse){
-  var col='rank_'+r+'_'+(mode||'normal')+'_'+(pulse||'press');
+  var s=soundMode?'sound':'nosound';
+  var col='rank_'+r+'_'+(mode||'normal')+'_'+(pulse||'press')+'_'+s;
   entry.ts=Date.now();
   if(db){
     db.collection(col).add(entry).catch(function(e){console.error('Firebase:',e);});
@@ -1443,13 +1495,18 @@ function showGo(){
       if(pulseMode==='release'){arenaSub.textContent='LEVANTA';arenaSub.style.color='rgba(255,255,255,0.8)';}
     }
   }
-  if(gameMode!=='distractor') playBeep();
+  if(gameMode!=='distractor' && soundMode) playBeep();
 }
 function react(){
   playClick();
   var raw=Date.now()-startTime;
   var elapsed=Math.max(1,raw-DISPLAY_CORRECTION);
-  var effectiveLucky=(pulseMode==='release'||pulseMode==='release2')?90:135;
+  var isRelease=(pulseMode==='release'||pulseMode==='release2'||pulseMode==='release2i');
+  if(soundMode){
+    var effectiveLucky=isRelease?90:125;
+  } else {
+    var effectiveLucky=isRelease?110:135;
+  }
   if(elapsed<effectiveLucky){showFail('lucky',elapsed);return;}
   appState='recording';validRounds++;results.push(elapsed);
   arena.className='';
@@ -1701,17 +1758,44 @@ function getRatingColor(ms){
   return 'rgb('+r+','+g+','+b+')';
 }
 
-var activeRankTab=5;
+var activeRankTab=10;
 var activeRankMode='normal';
 var activeRankPulse='press';
+var activeRankSound=true;
+
+function showRankSound(on){
+  activeRankSound=on;
+  document.getElementById('rsound-on').className='rank-tab'+(on?' active':'');
+  document.getElementById('rsound-off').className='rank-tab'+(!on?' active':'');
+  renderFullRanking(activeRankTab,activeRankMode,activeRankPulse);
+}
+
 function showFullRanking(){
   hideRepeated=false;
+  // Resetear siempre a: Normal, 10, Con sonido, Bajar
+  activeRankMode='normal';
+  activeRankTab=10;
+  activeRankSound=true;
+  activeRankPulse='press';
   var btn=document.getElementById('btn-hide-repeated');
   if(btn) btn.textContent='Ocultar repetidos';
-  activeRankTab=5;activeRankMode=gameMode||'normal';
+  document.getElementById('rmode-normal').className='rank-tab active';
+  document.getElementById('rmode-distractor').className='rank-tab';
+  document.getElementById('rmode-limite').className='rank-tab';
+  document.getElementById('rtab10').className='rank-tab active';
+  document.getElementById('rtab15').className='rank-tab';
+  document.getElementById('rtab30').className='rank-tab';
+  document.getElementById('rtab50').className='rank-tab';
+  document.getElementById('rsound-on').className='rank-tab active';
+  document.getElementById('rsound-off').className='rank-tab';
+  document.getElementById('rpulse-press').className='rank-tab active';
+  document.getElementById('rpulse-press2').className='rank-tab';
+  document.getElementById('rpulse-press2i').className='rank-tab';
+  document.getElementById('rpulse-release').className='rank-tab';
+  document.getElementById('rpulse-release2').className='rank-tab';
+  document.getElementById('rpulse-release2i').className='rank-tab';
   showScreen('ranking');
-  showRankTab(5);
-  showRankMode(activeRankMode);
+  renderFullRanking(10,'normal','press');
 }
 function showRankTab(n){
   activeRankTab=n;
@@ -1765,8 +1849,10 @@ function renderFullRanking(r,mode,pulse){
   var m=mode||'normal';
   var p=pulse||'press';
   var el=document.getElementById('rank-full-list');
+  if(!el) return;
   el.innerHTML='<div class="rank-full-empty">Cargando...</div>';
-  var col='rank_'+r+'_'+m+'_'+p;
+  var snd=(typeof activeRankSound!=='undefined'?activeRankSound:soundMode)?'sound':'nosound';
+  var col='rank_'+r+'_'+m+'_'+p+'_'+snd;
   if(db){
     var col2=col;
     db.collection(col2).limit(50).get().then(function(snap){
@@ -1800,6 +1886,14 @@ function goToFullRanking(){
 function repeatGame(){initAudio();resetGameState();distractorQueue=buildDistractorQueue();if(gameMode==='limite')initLimiteMode();showScreen('game');startWaiting();}
 
 var hideRepeated=false;
+var soundMode=true;
+
+function setSoundMode(on){
+  soundMode=on;
+  document.getElementById('sound-btn-on').className='seg-btn'+(on?' active':'');
+  document.getElementById('sound-btn-off').className='seg-btn'+(!on?' active':'');
+  playClick();
+}
 function toggleHideRepeated(){
   hideRepeated=!hideRepeated;
   var btn=document.getElementById('btn-hide-repeated');
