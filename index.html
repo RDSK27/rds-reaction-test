@@ -758,9 +758,8 @@ footer {
     <div class="section-title">Historial de rondas</div>
     <div class="history-grid" id="history-grid-results"></div>
   </div>
-  <div class="results-save-row">
-    <input class="results-save-input" id="results-name-input" type="text" placeholder="Tu nombre..." maxlength="20">
-    <button class="results-save-btn" onclick="saveFromResults()">Guardar</button>
+  <div class="results-save-row" style="justify-content:center; gap:8px;">
+    <button class="results-save-btn" style="flex:none; padding:12px 20px;" onclick="saveFromResults()">Guardar resultado</button>
     <button class="results-rank-btn" onclick="goToFullRanking()">Ranking</button>
   </div>
 
@@ -1587,8 +1586,11 @@ function showSaveFromLimiteFail(){
   goToResults();
 }
 function saveFromResults(){
-  var name=document.getElementById('results-name-input').value.trim().toUpperCase();
-  if(!name){document.getElementById('results-name-input').focus();return;}
+  var name=(savedUserName||savedName||'').trim().toUpperCase();
+  if(!name){
+    alert('Por favor escribe tu nombre en la pantalla de inicio antes de guardar.');
+    return;
+  }
   savedName=name;
   var completedR=gameMode==='limite'?limiteRoundsCompleted:totalRounds;
   addToRanking(totalRounds,name,currentAvg,gameMode,completedR);
@@ -1601,8 +1603,7 @@ function saveFromResults(){
 function goToResults(){
   var msg=document.getElementById('results-saved-msg');
   if(msg) msg.style.display='none';
-  document.getElementById('results-name-input').value=savedName||savedUserName||'';
-  document.getElementById('results-name-input').placeholder='Tu nombre...';
+
   document.getElementById('results-name-display').textContent=savedName||'';
   if(gameMode==='limite'){
     document.getElementById('results-avg-display').textContent=limiteRoundsCompleted+' / '+currentAvg+' ms';
@@ -1948,11 +1949,14 @@ function addR2Listeners(){
     r2FingerLeft=false;
     if(appState==='waiting'){earlyFail();return;}
     if(appState==='go'){
-      if(pulseMode==='release2i'){
-        if('left'!==r2ActiveSide){react();}else{showFail('wrong',0);}
-      } else {
-        if('left'===r2ActiveSide){react();}else{showFail('wrong',0);}
-      }
+      setTimeout(function(){
+        if(!r2FingerRight){showFail('wrong',0);return;}
+        if(pulseMode==='release2i'){
+          if('left'!==r2ActiveSide){react();}else{showFail('wrong',0);}
+        } else {
+          if('left'===r2ActiveSide){react();}else{showFail('wrong',0);}
+        }
+      }, 20);
     }
   },{passive:false});
   right.addEventListener('touchstart',function(e){
@@ -1975,11 +1979,14 @@ function addR2Listeners(){
     r2FingerRight=false;
     if(appState==='waiting'){earlyFail();return;}
     if(appState==='go'){
-      if(pulseMode==='release2i'){
-        if('right'!==r2ActiveSide){react();}else{showFail('wrong',0);}
-      } else {
-        if('right'===r2ActiveSide){react();}else{showFail('wrong',0);}
-      }
+      setTimeout(function(){
+        if(!r2FingerLeft){showFail('wrong',0);return;}
+        if(pulseMode==='release2i'){
+          if('right'!==r2ActiveSide){react();}else{showFail('wrong',0);}
+        } else {
+          if('right'===r2ActiveSide){react();}else{showFail('wrong',0);}
+        }
+      },20);
     }
   },{passive:false});
 }
