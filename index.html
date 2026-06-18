@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
 <meta charset="UTF-8">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="white">
@@ -151,12 +152,12 @@ header img { width:100%; max-width:320px; height:auto; display:block; margin-bot
 /* BUTTONS */
 .btn-primary {
   width:72%; padding:14px;
-  background:#111; color:#fff;
+  background:#b03020; color:#fff;
   border:none; font-size:0.82rem;
   font-weight:900; letter-spacing:0.22em;
   text-transform:uppercase; cursor:pointer;
   border-radius:6px;
-  box-shadow:0 6px 20px rgba(0,0,0,0.35);
+  box-shadow:0 6px 20px rgba(176,48,32,0.35);
   transition:transform 0.12s,box-shadow 0.12s;
   margin-top:32px;
 }
@@ -466,7 +467,7 @@ header img { width:100%; max-width:320px; height:auto; display:block; margin-bot
 
 .action-row { display:flex; flex-direction:column; align-items:center; gap:10px; }
 .btn-ranking {
-  width:62%; padding:12px;
+  width:52%; padding:14px;
   background:#fff; color:#b03020;
   border:2px solid #b03020;
   font-size:0.78rem; font-weight:900;
@@ -474,7 +475,7 @@ header img { width:100%; max-width:320px; height:auto; display:block; margin-bot
   cursor:pointer; text-align:center;
   border-radius:6px;
   transition:transform 0.12s;
-  margin-top:0;
+  margin-top:6px;
 }
 .btn-ranking:active{transform:translateY(3px);}
 
@@ -525,12 +526,7 @@ header img { width:100%; max-width:320px; height:auto; display:block; margin-bot
   cursor:pointer;
 }
 
-footer {
-  width:100%; text-align:center; padding:10px;
-  font-size:0.54rem; color:#ccc; letter-spacing:0.14em;
-  border-top:1px solid #e0e0e0; background:#fff;
-  margin-top:auto; text-transform:uppercase;
-}
+
 
 @media (max-width:560px) {
   .stats-bar { grid-template-columns:repeat(2,1fr); }
@@ -562,9 +558,9 @@ footer {
   display:flex;
   flex-direction:column;
   align-items:center;
-  padding:0 16px 5px;
+  padding:6px 16px 16px;
   box-sizing:border-box;
-  gap:0;
+  gap:6px;
 }
 #user-name-input {
   width:190px;
@@ -593,16 +589,77 @@ footer {
   box-shadow:0 3px 10px rgba(176,48,32,0.35);
   margin-top:0;
 }
+
+/* === PANEL NEGRO INFERIOR === */
+html,body{ background:#000000; }
+body::after{
+  content:""; position:fixed; left:0; right:0; bottom:0;
+  height:160px; background:#000000; z-index:-1; pointer-events:none;
+}
+.home-bottom{
+  margin-top:16px;
+  margin-left:-16px; margin-right:-16px;
+  margin-bottom:-18px;
+  background:#000;
+  border-top:4px solid #b03020;
+  padding:18px 16px 20px;
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  width:calc(100% + 32px);
+  box-sizing:border-box;
+}
+#btn-start{
+  width:66%; height:38px; padding:0;
+  display:flex; align-items:center; justify-content:center;
+  border:none; border-radius:6px;
+  background:#b03020; color:#fff;
+  font-family:Arial,sans-serif;
+  font-weight:700; font-size:13px; letter-spacing:2px; text-transform:uppercase;
+  box-shadow:0 3px 10px rgba(176,48,32,.4); cursor:pointer;
+}
+#btn-goranking{
+  width:58%; height:38px; padding:0;
+  display:flex; align-items:center; justify-content:center;
+  background:#fff; color:#b03020;
+  border:2px solid #b03020; border-radius:6px;
+  font-family:Arial,sans-serif;
+  font-weight:700; font-size:13px; letter-spacing:2px; text-transform:uppercase;
+  cursor:pointer;
+}
+.home-name-wrap{
+  width:44%; height:38px;
+  display:flex; flex-direction:row; align-items:stretch; gap:0;
+}
+.home-ini-input{
+  flex:1; min-width:0; height:100%; box-sizing:border-box;
+  border:2px solid #b03020; border-right:none; border-radius:5px 0 0 5px;
+  text-align:center; text-transform:uppercase;
+  font-weight:700; font-size:14px; letter-spacing:1px;
+  color:#111; background:#fff; padding:0 6px; outline:none;
+}
+.home-sport-select{
+  flex:1; min-width:0; height:100%; box-sizing:border-box;
+  border:2px solid #b03020; border-radius:0 5px 5px 0;
+  font-weight:700; font-size:11px;
+  color:#111; background:#fff; padding:0 4px; outline:none;
+  -webkit-appearance:none; appearance:none;
+}
+/* Pantalla inicio: flex columna para que el panel se ancle abajo */
+#screen-home{
+  display:flex !important;
+  flex-direction:column;
+  flex:1;
+  min-height:100vh;
+  padding-bottom:0 !important;
+}
 </style>
   <link rel="manifest" href="/manifest.json">
   <script>
     if('serviceWorker' in navigator){
-      window.addEventListener('load', function(){
-  showScreen('home');
-  var inp = document.getElementById('user-name-input');
-  if(inp && savedUserName) inp.value = savedUserName;
-        navigator.serviceWorker.register('/rds-reaction-test/sw.js',{scope:'/rds-reaction-test/'});
+      // Desregistrar SWs anteriores que puedan estar cacheando versiones viejas
+      navigator.serviceWorker.getRegistrations().then(function(regs){
+        for(var i=0;i<regs.length;i++) regs[i].unregister();
       });
+      navigator.serviceWorker.register('/rds-reaction-test/sw.js',{scope:'/rds-reaction-test/'});
     }
   </script>
 
@@ -664,85 +721,47 @@ footer {
     </div>
   </div>
 
-  <button class="btn-primary" ontouchend="event.stopPropagation();" onclick="playClick();startGame()">Iniciar Test</button>
-  <button class="btn-ranking" onclick="showFullRanking()">&#127942; Ranking</button>
-  <div id="user-name-bar">
-    <input id="user-name-input" type="text" maxlength="20" placeholder="Nombre" oninput="this.value=this.value.toUpperCase()">
-    <button id="user-save-btn" onclick="saveUserName()">Guardar</button>
-  </div>
-  
+  </div><!-- fin action-row -->
+
+  <div class="home-bottom">
+    <button id="btn-start" ontouchend="event.stopPropagation();" onclick="playClick();startGame()">INICIAR TEST</button>
+    <button id="btn-goranking" onclick="showFullRanking()">&#127942; RANKING</button>
+    <div class="home-name-wrap">
+      <input id="home-initials" class="home-ini-input" maxlength="3" placeholder="INI" autocomplete="off" oninput="filterInitials(this)">
+      <select id="home-sport" class="home-sport-select">
+        <option value="ATL">Atletismo</option>
+        <option value="AUT">Automovilismo</option>
+        <option value="BMT">B&#225;dminton</option>
+        <option value="BLC">Baloncesto</option>
+        <option value="BLM">Balonmano</option>
+        <option value="BOX">Boxeo</option>
+        <option value="CIC">Ciclismo</option>
+        <option value="ESC">Escalada</option>
+        <option value="ESG">Esgrima</option>
+        <option value="ESQ">Esqu&#237;</option>
+        <option value="FTB">F&#250;tbol</option>
+        <option value="GIM">Gimnasia</option>
+        <option value="GLF">Golf</option>
+        <option value="HAL">Halterofilia</option>
+        <option value="HCK">Hockey</option>
+        <option value="JUD">Judo</option>
+        <option value="KRT">Karate</option>
+        <option value="MOT">Motociclismo</option>
+        <option value="NTC">Nataci&#243;n</option>
+        <option value="OTR" selected>Otros</option>
+        <option value="PAD">P&#225;del</option>
+        <option value="PRG">Pirag&#252;ismo</option>
+        <option value="REM">Remo</option>
+        <option value="RUG">Rugby</option>
+        <option value="SRF">Surf</option>
+        <option value="TKD">Taekwondo</option>
+        <option value="TNS">Tenis</option>
+        <option value="TRI">Triatl&#243;n</option>
+        <option value="VOL">Voleibol</option>
+      </select>
+    </div>
   </div>
 </div>
-
-<!-- GAME -->
-<div class="screen" id="screen-game">
-  <div class="stats-bar">
-    <div class="stat-card"><div class="stat-label">Mejor</div><div class="stat-value" id="stat-last">--</div><div class="stat-unit">ms</div></div>
-    <div class="stat-card"><div class="stat-label" id="stat-peor-label">Peor</div><div class="stat-value" id="stat-best">--</div><div class="stat-unit">ms</div></div>
-    <div class="stat-card" style="background:#fdf0ee;"><div class="stat-label">Promedio</div><div class="stat-value" id="stat-avg">--</div><div class="stat-unit">ms</div></div>
-    <div class="stat-card"><div class="stat-label">Rondas</div><div class="stat-value" id="stat-rounds">0</div><div class="stat-unit">completadas</div></div>
-  </div>
-
-  <div class="meter-wrap" id="meter-section">
-    <div class="meter-last-value" id="meter-value">--</div>
-    <div class="meter-last-label" id="meter-label">Ultimo resultado</div>
-    <div class="meter-bar-wrap">
-      <div class="meter-bar"></div>
-      <div class="meter-needle" id="meter-needle" style="left:0%"></div>
-    </div>
-    <div class="meter-scale">
-      <span>50</span><span>100</span><span>200</span><span>300</span><span>400</span>
-    </div>
-    <div class="meter-rating" id="meter-rating">&nbsp;</div>
-  </div>
-
-  <div class="progress-row">
-    <div id="progress-label">RONDA 0 / 10</div>
-    <div class="progress-track"><div id="progress-fill"></div></div>
-  </div>
-
-  <div class="r2-outer" id="r2-outer">
-    <div class="r2-buttons" id="r2-buttons">
-      <div class="r2-zone" id="r2-left"></div>
-      <div class="r2-zone" id="r2-right"></div>
-    </div>
-  </div>
-
-  <div id="limite-display" style="position:fixed;bottom:45px;left:0;right:0;text-align:center;visibility:hidden;pointer-events:none;z-index:50;"></div>
-
-  <div id="arena-r2-wrapper">
-    <div id="arena">
-      <div id="arena-icon"></div>
-      <div id="arena-main">...</div>
-      <div id="arena-sub">Preparando...</div>
-      <div id="arena-msg"></div>
-    </div>
-  </div>
-
-  <div id="limite-fail-screen">
-    <div class="lf-title">Este es tu limite</div>
-    <div class="lf-limit" id="lf-limit-val">340 ms</div>
-    <div class="lf-sub" id="lf-result-val">Ensayo 1 — 450 ms</div>
-    <div class="lf-actions">
-      <button class="lf-btn-main lf-btn-dark" onclick="goHome()">Inicio</button>
-      <button class="lf-btn-main lf-btn-dark" onclick="resetGame()">↺ Repetir</button>
-      <button class="lf-btn-main lf-btn-red" onclick="showSaveFromLimiteFail()">Guardar</button>
-    </div>
-  </div>
-
-  <div id="arena-actions">
-    <button id="btn-gohome" onclick="goHome()">&#8592; Inicio</button>
-    <button id="btn-restart" onclick="resetGame()">↺ Repetir</button>
-  </div>
-
-  <div class="game-controls">
-    <button class="game-ctrl-btn" onclick="goHome()">&#8592; Inicio</button>
-    <button class="game-ctrl-btn" onclick="resetGame()">↺ Repetir</button>
-  </div>
-
-</div>
-
-
 
 <!-- RESULTS -->
 <div class="screen" id="screen-results">
@@ -806,17 +825,22 @@ footer {
   </div>
 </div>
 
-<footer>RDS Psicologia Deportiva &mdash; Test de Velocidad de Reaccion</footer>
 
 <script>
 // Nombre de usuario persistente
 var savedUserName = localStorage.getItem('rds_username') || '';
 
+function filterInitials(el){
+  el.value=el.value.replace(/[^A-Za-z]/g,'').toUpperCase();
+}
+
 function saveUserName(){
-  var input = document.getElementById('user-name-input');
-  var name = input.value.trim().toUpperCase();
+  var iniEl = document.getElementById('home-initials') || document.getElementById('user-ini-input');
+  var sptEl = document.getElementById('home-sport') || document.getElementById('user-sport-select');
+  var ini = (iniEl ? iniEl.value.trim().toUpperCase() : '') || 'RDS';
+  var sport = sptEl ? sptEl.value : 'OTR';
+  var name = ini + '-' + sport;
   savedUserName = name;
-  input.value = name;
   localStorage.setItem('rds_username', name);
 }
 
@@ -864,7 +888,7 @@ var LIMITES_RELEASE2={
   '50': [300, 297, 294, 291, 288, 285, 282, 279, 276, 273, 270, 268, 265, 262, 259, 256, 253, 250, 247, 244, 241, 238, 235, 232, 229, 226, 223, 220, 217, 214, 211, 208, 205, 202, 200, 197, 194, 191, 188, 185, 182, 179, 176, 173, 170, 170, 170, 170, 170, 170]
 };
 
-// Límites SIN SONIDO
+// Limites SIN SONIDO
 var LIMITES_NS={
   '10': [280, 265, 250, 235, 220, 205, 190, 190, 190, 190],
   '15': [300, 288, 276, 263, 251, 239, 227, 214, 202, 190, 190, 190, 190, 190, 190],
@@ -1076,6 +1100,7 @@ function homeSetRounds(n){
 }
 function goHome(){if(waitTimer)clearTimeout(waitTimer);appState='idle';showScreen('home');showTab(activeRankingTab);}
 function startGame(){
+  saveUserName();
   fingerDown=false;
   releaseReady=false;
   initAudio();resetGameState();
@@ -1824,6 +1849,7 @@ function showRankPulse(p){
   renderFullRanking(activeRankTab,activeRankMode,activeRankPulse);
 }
 function renderRankList(list, el, m){
+  list=limitPerName(list);
   list=filterRepeated(list);
   el.innerHTML='';
   if(!list.length){
@@ -1915,6 +1941,17 @@ function filterRepeated(list){
   }
   return result;
 }
+
+function limitPerName(list){
+  var counts={};
+  var result=[];
+  for(var i=0;i<list.length;i++){
+    var name=(list[i].name||'').toLowerCase().trim();
+    counts[name]=(counts[name]||0)+1;
+    if(counts[name]<=3) result.push(list[i]);
+  }
+  return result;
+}
 function goHomeRanking(){if(waitTimer)clearTimeout(waitTimer);appState='idle';activeRankingTab=totalRounds;showScreen('home');}
 homeSetRounds(10);showTab(5);
 
@@ -1991,6 +2028,17 @@ function addR2Listeners(){
   },{passive:false});
 }
 addR2Listeners();
+
+window.addEventListener('load', function(){
+  showScreen('home');
+  if(savedUserName && savedUserName.indexOf('-') > -1){
+    var parts=savedUserName.split('-');
+    var iniEl=document.getElementById('home-initials');
+    var sptEl=document.getElementById('home-sport');
+    if(iniEl) iniEl.value=parts[0];
+    if(sptEl&&parts[1]) sptEl.value=parts[1];
+  }
+});
 </script>
   <!-- Firebase — carga diferida para no bloquear la app -->
   <script>
@@ -2019,12 +2067,25 @@ addR2Listeners();
       document.head.appendChild(s);
     }
     window.addEventListener('load', function(){
-      loadScript('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js', function(){
-        loadScript('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js', function(){
-          initFirebase();
-        });
-      });
+      try {
+        var s1=document.createElement('script');
+        s1.src='https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js';
+        s1.crossOrigin='anonymous';
+        s1.onload=function(){
+          try {
+            var s2=document.createElement('script');
+            s2.src='https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js';
+            s2.crossOrigin='anonymous';
+            s2.onload=function(){ try{initFirebase();}catch(e){} };
+            s2.onerror=function(){};
+            document.head.appendChild(s2);
+          } catch(e){}
+        };
+        s1.onerror=function(){};
+        document.head.appendChild(s1);
+      } catch(e){}
     });
+  
   </script>
 </body>
 </html>
