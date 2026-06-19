@@ -1210,6 +1210,7 @@ function addToRanking(r,name,avg,mode,completedRounds){
 function showScreen(name){
   var ss=['home','game','results','ranking'];
   for(var i=0;i<ss.length;i++) document.getElementById('screen-'+ss[i]).className='screen'+(ss[i]===name?' active':'');
+  setTimeout(function(){ if(typeof fitApp==='function') fitApp(); }, 50);
 }
 
 function showTab(n){
@@ -1268,9 +1269,14 @@ var MAX_SCALE = 2.0;
 function fitApp(){
   var wrap = document.getElementById('app-wrap');
   if(!wrap) return;
+  // Resetear para medir correctamente
   wrap.style.transform = 'none';
+  wrap.style.transformOrigin = 'top center';
   wrap.style.width = DESIGN_W + 'px';
-  var naturalH = wrap.scrollHeight;
+  // Medir la pantalla activa
+  var activeScreen = wrap.querySelector('.screen.active');
+  var naturalH = activeScreen ? activeScreen.scrollHeight : wrap.scrollHeight;
+  naturalH = Math.max(naturalH, 500); // mínimo
   var scaleByW = window.innerWidth / DESIGN_W;
   var scaleByH = window.innerHeight / naturalH;
   var s = Math.min(scaleByW, scaleByH, MAX_SCALE);
@@ -1282,7 +1288,6 @@ function fitApp(){
   }
   wrap.style.width = DESIGN_W + 'px';
   wrap.style.transform = 'scale(' + s + ')';
-  wrap.style.transformOrigin = 'top center';
   document.body.style.height = Math.round(naturalH * s) + 'px';
   document.body.style.overflowX = 'hidden';
 }
@@ -2277,9 +2282,14 @@ var MAX_SCALE = 2.0;
 function fitApp(){
   var wrap = document.getElementById('app-wrap');
   if(!wrap) return;
+  // Resetear para medir correctamente
   wrap.style.transform = 'none';
+  wrap.style.transformOrigin = 'top center';
   wrap.style.width = DESIGN_W + 'px';
-  var naturalH = wrap.scrollHeight;
+  // Medir la pantalla activa
+  var activeScreen = wrap.querySelector('.screen.active');
+  var naturalH = activeScreen ? activeScreen.scrollHeight : wrap.scrollHeight;
+  naturalH = Math.max(naturalH, 500); // mínimo
   var scaleByW = window.innerWidth / DESIGN_W;
   var scaleByH = window.innerHeight / naturalH;
   var s = Math.min(scaleByW, scaleByH, MAX_SCALE);
@@ -2291,7 +2301,6 @@ function fitApp(){
   }
   wrap.style.width = DESIGN_W + 'px';
   wrap.style.transform = 'scale(' + s + ')';
-  wrap.style.transformOrigin = 'top center';
   document.body.style.height = Math.round(naturalH * s) + 'px';
   document.body.style.overflowX = 'hidden';
 }
