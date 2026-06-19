@@ -1547,19 +1547,21 @@ arena.addEventListener('click', function(){
 });
 
 arena.addEventListener('touchstart', function(e){
-  if(pulseMode==='release'||pulseMode==='release2'||pulseMode==='release2i') return;
   if(pulseMode==='press2'||pulseMode==='press2i') return; // tienen sus propios listeners
+  if(pulseMode==='release2'||pulseMode==='release2i') return; // tienen sus propios listeners
   e.preventDefault();
+  if(pulseMode==='release'){
+    // Modo subir: registrar que el dedo está apoyado
+    fingerDown=true;
+    releaseReady=true;
+    return;
+  }
+  // Modo press normal
   if(appState==='waiting'){earlyFail();}
   else if(appState==='go'){react();}
 }, {passive:false});
 
 // Release: ontouchstart y ontouchend asignados directamente
-arena.ontouchstart=function(e){
-  if(pulseMode!=='release') return;
-  e.preventDefault();
-  fingerDown=true;
-};
 arena.ontouchend=function(e){
   if(pulseMode!=='release') return;
   e.preventDefault();
@@ -1633,6 +1635,11 @@ function startWaiting(){
   appState='waiting';arena.className='ready';
   showActions(false);arenaMsg.style.display='none';
   arenaIcon.textContent='';
+  // Para modo release simple: resetear releaseReady y esperar que el dedo se apoye
+  if(pulseMode==='release'){
+    releaseReady=false;
+    fingerDown=false;
+  }
   var delay=1500+Math.floor(Math.random()*2000);
   if(gameMode==='distractor'){
     arena.className='distractor-msg';
@@ -1718,6 +1725,7 @@ function showGo(){
   if(gameMode!=='distractor' && soundMode) playBeep();
 }
 function react(){
+  if(appState!=='go') return; // guard contra doble disparo
   playClick();
   var raw=Date.now()-startTime;
   var elapsed=Math.max(1,raw-DISPLAY_CORRECTION);
