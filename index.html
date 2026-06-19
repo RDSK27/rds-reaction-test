@@ -467,10 +467,9 @@ header img { width:100%; max-width:320px; height:auto; display:block; margin-bot
 }
 .results-actions {
   display:flex; flex-direction:row; gap:0;
-  position:sticky; bottom:0;
   width:100%; z-index:10;
   border-top:4px solid #b03020;
-  margin-top:auto;
+  margin-top:0;
 }
 .results-btn-main {
   width:38%; padding:13px;
@@ -905,14 +904,15 @@ footer {
     <div class="section-title">Historial de rondas</div>
     <div class="history-grid" id="history-grid-results"></div>
   </div>
-  <div style="display:flex;width:calc(100% - 28px);margin:0 14px;gap:0;">
-    <button class="results-save-btn" onclick="saveFromResults()">Guardar resultado</button>
-    <button class="results-rank-btn" onclick="goToFullRanking()">&#127942; Ranking</button>
-  </div>
-
-  <div class="results-actions">
-    <button class="game-ctrl-btn" onclick="goHome()">&#8592; Inicio</button>
-    <button class="game-ctrl-btn" style="border-right:none;border-left:1px solid #333;" onclick="repeatGame()">↺ Repetir</button>
+  <div style="margin-top:auto;">
+    <div style="display:flex;width:calc(100% - 28px);margin:0 14px;gap:0;">
+      <button class="results-save-btn" onclick="saveFromResults()">Guardar resultado</button>
+      <button class="results-rank-btn" onclick="goToFullRanking()">&#127942; Ranking</button>
+    </div>
+    <div class="results-actions">
+      <button class="game-ctrl-btn" onclick="goHome()">&#8592; Inicio</button>
+      <button class="game-ctrl-btn" style="border-right:none;border-left:1px solid #333;" onclick="repeatGame()">↺ Repetir</button>
+    </div>
   </div>
   <div id="results-saved-msg" style="display:none;text-align:center;font-size:0.62rem;color:#27ae60;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;padding:8px 0;">Guardado correctamente</div>
 </div>
@@ -1269,27 +1269,44 @@ var MAX_SCALE = 2.0;
 function fitApp(){
   var wrap = document.getElementById('app-wrap');
   if(!wrap) return;
-  // Resetear para medir correctamente
+  // Resetear
   wrap.style.transform = 'none';
-  wrap.style.transformOrigin = 'top center';
+  wrap.style.transformOrigin = 'top left';
   wrap.style.width = DESIGN_W + 'px';
-  // Medir la pantalla activa
+  wrap.style.position = '';
+  wrap.style.left = '';
+  wrap.style.top = '';
+  // Medir pantalla activa
   var activeScreen = wrap.querySelector('.screen.active');
   var naturalH = activeScreen ? activeScreen.scrollHeight : wrap.scrollHeight;
-  naturalH = Math.max(naturalH, 500); // mínimo
+  naturalH = Math.max(naturalH, 500);
   var scaleByW = window.innerWidth / DESIGN_W;
   var scaleByH = window.innerHeight / naturalH;
   var s = Math.min(scaleByW, scaleByH, MAX_SCALE);
   if(s <= 1){
     wrap.style.transform = 'none';
     wrap.style.width = '100%';
+    wrap.style.position = '';
+    wrap.style.left = '';
+    wrap.style.top = '';
     document.body.style.height = '';
+    document.body.style.display = '';
     return;
   }
+  // Calcular dimensiones escaladas
+  var scaledW = Math.round(DESIGN_W * s);
+  var scaledH = Math.round(naturalH * s);
+  // Centrar horizontal y verticalmente
+  var offsetX = Math.round((window.innerWidth - scaledW) / 2);
+  var offsetY = Math.round((window.innerHeight - scaledH) / 2);
+  offsetY = Math.max(0, offsetY); // nunca negativo
   wrap.style.width = DESIGN_W + 'px';
+  wrap.style.position = 'absolute';
+  wrap.style.left = offsetX + 'px';
+  wrap.style.top = offsetY + 'px';
   wrap.style.transform = 'scale(' + s + ')';
-  document.body.style.height = Math.round(naturalH * s) + 'px';
-  document.body.style.overflowX = 'hidden';
+  document.body.style.height = window.innerHeight + 'px';
+  document.body.style.overflow = 'hidden';
 }
 window.addEventListener('resize', fitApp);
 window.addEventListener('orientationchange', fitApp);
@@ -2282,27 +2299,44 @@ var MAX_SCALE = 2.0;
 function fitApp(){
   var wrap = document.getElementById('app-wrap');
   if(!wrap) return;
-  // Resetear para medir correctamente
+  // Resetear
   wrap.style.transform = 'none';
-  wrap.style.transformOrigin = 'top center';
+  wrap.style.transformOrigin = 'top left';
   wrap.style.width = DESIGN_W + 'px';
-  // Medir la pantalla activa
+  wrap.style.position = '';
+  wrap.style.left = '';
+  wrap.style.top = '';
+  // Medir pantalla activa
   var activeScreen = wrap.querySelector('.screen.active');
   var naturalH = activeScreen ? activeScreen.scrollHeight : wrap.scrollHeight;
-  naturalH = Math.max(naturalH, 500); // mínimo
+  naturalH = Math.max(naturalH, 500);
   var scaleByW = window.innerWidth / DESIGN_W;
   var scaleByH = window.innerHeight / naturalH;
   var s = Math.min(scaleByW, scaleByH, MAX_SCALE);
   if(s <= 1){
     wrap.style.transform = 'none';
     wrap.style.width = '100%';
+    wrap.style.position = '';
+    wrap.style.left = '';
+    wrap.style.top = '';
     document.body.style.height = '';
+    document.body.style.display = '';
     return;
   }
+  // Calcular dimensiones escaladas
+  var scaledW = Math.round(DESIGN_W * s);
+  var scaledH = Math.round(naturalH * s);
+  // Centrar horizontal y verticalmente
+  var offsetX = Math.round((window.innerWidth - scaledW) / 2);
+  var offsetY = Math.round((window.innerHeight - scaledH) / 2);
+  offsetY = Math.max(0, offsetY); // nunca negativo
   wrap.style.width = DESIGN_W + 'px';
+  wrap.style.position = 'absolute';
+  wrap.style.left = offsetX + 'px';
+  wrap.style.top = offsetY + 'px';
   wrap.style.transform = 'scale(' + s + ')';
-  document.body.style.height = Math.round(naturalH * s) + 'px';
-  document.body.style.overflowX = 'hidden';
+  document.body.style.height = window.innerHeight + 'px';
+  document.body.style.overflow = 'hidden';
 }
 window.addEventListener('resize', fitApp);
 window.addEventListener('orientationchange', fitApp);
