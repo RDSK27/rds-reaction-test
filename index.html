@@ -30,6 +30,8 @@
 html, body {
   background:var(--bg-page);
   margin:0; padding:0;
+  position:relative;
+  overflow:hidden;
 }
 
 body {
@@ -646,8 +648,8 @@ footer {
 /* TABLET SCALING */
 #app-wrap {
   width:700px;
-  transform-origin:top center;
-  margin:0 auto;
+  transform-origin:top left;
+  position:relative;
 }
 
 /* TRANSICION EJERCICIO FINALIZADO */
@@ -673,6 +675,43 @@ footer {
   border-top:4px solid #b03020;
   border-bottom:4px solid #b03020;
   padding:16px 30px;
+}
+
+/* BOTON START CIRCULAR 3D */
+#btn-start-wrap {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:4px 0 2px;
+}
+#btn-start {
+  width:70px;
+  height:70px;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #e84030 0%, #b03020 45%, #7a1a10 100%);
+  border:none;
+  color:#fff;
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  font-weight:900;
+  font-size:0.6rem;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  cursor:pointer;
+  position:relative;
+  box-shadow:
+    0 5px 0 #5a0f08,
+    0 7px 14px rgba(0,0,0,0.6),
+    inset 0 2px 3px rgba(255,255,255,0.2);
+  transition:transform 0.08s, box-shadow 0.08s;
+  outline:3px solid #7a1a10;
+  outline-offset:3px;
+}
+#btn-start:active {
+  transform:translateY(4px);
+  box-shadow:
+    0 1px 0 #5a0f08,
+    0 3px 8px rgba(0,0,0,0.6),
+    inset 0 2px 4px rgba(0,0,0,0.2);
 }
 </style>
   <link rel="manifest" href="/manifest.json">
@@ -770,8 +809,10 @@ footer {
     </div>
   </div>
 
-  <div style="border:3px solid #b03020;border-radius:10px;background:#111;padding:0px 12px 30px;display:flex;flex-direction:column;align-items:center;gap:8px;width:92%;box-sizing:border-box;margin-bottom:8px;margin-top:32px;">
-  <button class="btn-primary" ontouchend="event.stopPropagation();" onclick="playClick();prepareAndCountdown()">Iniciar Test</button>
+  <div style="border:3px solid #b03020;border-radius:10px;background:#111;padding:10px 12px 16px;display:flex;flex-direction:column;align-items:center;gap:8px;width:92%;box-sizing:border-box;margin-bottom:20px;margin-top:32px;">
+  <div id="btn-start-wrap">
+  <button id="btn-start" ontouchend="event.stopPropagation();" onclick="playClick();prepareAndCountdown()">START</button>
+</div>
   <button class="btn-ranking" onclick="showFullRanking()">&#127942; Ranking</button>
   <div id="user-name-bar">
     <div style="display:flex;width:200px;gap:0;margin:0 auto;">
@@ -1269,13 +1310,9 @@ var MAX_SCALE = 2.0;
 function fitApp(){
   var wrap = document.getElementById('app-wrap');
   if(!wrap) return;
-  // Resetear
+  // Resetear transform para medir correctamente
   wrap.style.transform = 'none';
-  wrap.style.transformOrigin = 'top left';
   wrap.style.width = DESIGN_W + 'px';
-  wrap.style.position = '';
-  wrap.style.left = '';
-  wrap.style.top = '';
   // Medir pantalla activa
   var activeScreen = wrap.querySelector('.screen.active');
   var naturalH = activeScreen ? activeScreen.scrollHeight : wrap.scrollHeight;
@@ -1284,29 +1321,25 @@ function fitApp(){
   var scaleByH = window.innerHeight / naturalH;
   var s = Math.min(scaleByW, scaleByH, MAX_SCALE);
   if(s <= 1){
+    // Movil: sin escala
     wrap.style.transform = 'none';
     wrap.style.width = '100%';
-    wrap.style.position = '';
-    wrap.style.left = '';
-    wrap.style.top = '';
+    wrap.style.marginLeft = '0';
+    wrap.style.marginTop = '0';
     document.body.style.height = '';
-    document.body.style.display = '';
     return;
   }
-  // Calcular dimensiones escaladas
+  // Tablet/escritorio: centrar con margen
   var scaledW = Math.round(DESIGN_W * s);
   var scaledH = Math.round(naturalH * s);
-  // Centrar horizontal y verticalmente
-  var offsetX = Math.round((window.innerWidth - scaledW) / 2);
-  var offsetY = Math.round((window.innerHeight - scaledH) / 2);
-  offsetY = Math.max(0, offsetY); // nunca negativo
+  var marginX = Math.round((window.innerWidth - scaledW) / 2);
+  var marginY = Math.max(0, Math.round((window.innerHeight - scaledH) / 2));
   wrap.style.width = DESIGN_W + 'px';
-  wrap.style.position = 'absolute';
-  wrap.style.left = offsetX + 'px';
-  wrap.style.top = offsetY + 'px';
+  wrap.style.transformOrigin = 'top left';
   wrap.style.transform = 'scale(' + s + ')';
+  wrap.style.marginLeft = marginX + 'px';
+  wrap.style.marginTop = marginY + 'px';
   document.body.style.height = window.innerHeight + 'px';
-  document.body.style.overflow = 'hidden';
 }
 window.addEventListener('resize', fitApp);
 window.addEventListener('orientationchange', fitApp);
@@ -2299,13 +2332,9 @@ var MAX_SCALE = 2.0;
 function fitApp(){
   var wrap = document.getElementById('app-wrap');
   if(!wrap) return;
-  // Resetear
+  // Resetear transform para medir correctamente
   wrap.style.transform = 'none';
-  wrap.style.transformOrigin = 'top left';
   wrap.style.width = DESIGN_W + 'px';
-  wrap.style.position = '';
-  wrap.style.left = '';
-  wrap.style.top = '';
   // Medir pantalla activa
   var activeScreen = wrap.querySelector('.screen.active');
   var naturalH = activeScreen ? activeScreen.scrollHeight : wrap.scrollHeight;
@@ -2314,29 +2343,25 @@ function fitApp(){
   var scaleByH = window.innerHeight / naturalH;
   var s = Math.min(scaleByW, scaleByH, MAX_SCALE);
   if(s <= 1){
+    // Movil: sin escala
     wrap.style.transform = 'none';
     wrap.style.width = '100%';
-    wrap.style.position = '';
-    wrap.style.left = '';
-    wrap.style.top = '';
+    wrap.style.marginLeft = '0';
+    wrap.style.marginTop = '0';
     document.body.style.height = '';
-    document.body.style.display = '';
     return;
   }
-  // Calcular dimensiones escaladas
+  // Tablet/escritorio: centrar con margen
   var scaledW = Math.round(DESIGN_W * s);
   var scaledH = Math.round(naturalH * s);
-  // Centrar horizontal y verticalmente
-  var offsetX = Math.round((window.innerWidth - scaledW) / 2);
-  var offsetY = Math.round((window.innerHeight - scaledH) / 2);
-  offsetY = Math.max(0, offsetY); // nunca negativo
+  var marginX = Math.round((window.innerWidth - scaledW) / 2);
+  var marginY = Math.max(0, Math.round((window.innerHeight - scaledH) / 2));
   wrap.style.width = DESIGN_W + 'px';
-  wrap.style.position = 'absolute';
-  wrap.style.left = offsetX + 'px';
-  wrap.style.top = offsetY + 'px';
+  wrap.style.transformOrigin = 'top left';
   wrap.style.transform = 'scale(' + s + ')';
+  wrap.style.marginLeft = marginX + 'px';
+  wrap.style.marginTop = marginY + 'px';
   document.body.style.height = window.innerHeight + 'px';
-  document.body.style.overflow = 'hidden';
 }
 window.addEventListener('resize', fitApp);
 window.addEventListener('orientationchange', fitApp);
