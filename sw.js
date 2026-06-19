@@ -1,4 +1,4 @@
-var CACHE = 'rds-reaction-v7';
+var CACHE = 'rds-reaction-v8';
 
 var PRECACHE = [
   '/rds-reaction-test/',
@@ -46,6 +46,26 @@ self.addEventListener('fetch', function(e){
   for(var i=0; i<NO_CACHE.length; i++){
     if(url.indexOf(NO_CACHE[i]) > -1) return;
   }
+
+  // Network-first para la navegacion (el HTML): siempre intenta traer la version nueva.
+  if(e.request.mode === 'navigate'){
+    e.respondWith(
+      fetch(e.request).then(function(res){
+        if(res && res.status === 200){
+          var clone = res.clone();
+          caches.open(CACHE).then(function(c){ c.put(e.request, clone); });
+        }
+        return res;
+      }).catch(function(){
+        return caches.match(e.request).then(function(cached){
+          return cached || caches.match('/rds-reaction-test/index.html');
+        });
+      })
+    );
+    return;
+  }
+
+  // Cache-first para el resto de recursos estaticos.
   e.respondWith(
     caches.match(e.request).then(function(cached){
       if(cached) return cached;
