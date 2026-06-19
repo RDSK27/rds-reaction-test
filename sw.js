@@ -25,6 +25,10 @@ self.addEventListener('install', function(e){
   self.skipWaiting();
 });
 
+self.addEventListener('message', function(e){
+  if(e.data && e.data.action === 'skipWaiting') self.skipWaiting();
+});
+
 self.addEventListener('activate', function(e){
   e.waitUntil(
     caches.keys().then(function(keys){

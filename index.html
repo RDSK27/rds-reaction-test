@@ -694,7 +694,20 @@ footer {
     if(iniEl) iniEl.value=parts[0];
     if(sptEl&&parts[1]) sptEl.value=parts[1];
   }
-        navigator.serviceWorker.register('/rds-reaction-test/sw.js',{scope:'/rds-reaction-test/'});
+        navigator.serviceWorker.register('/rds-reaction-test/sw.js',{scope:'/rds-reaction-test/'})
+          .then(function(reg){
+            reg.addEventListener('updatefound', function(){
+              var newSW=reg.installing;
+              newSW.addEventListener('statechange', function(){
+                if(newSW.state==='installed'&&navigator.serviceWorker.controller){
+                  newSW.postMessage({action:'skipWaiting'});
+                }
+              });
+            });
+          });
+        navigator.serviceWorker.addEventListener('controllerchange',function(){
+          window.location.reload();
+        });
       });
     }
   </script>
@@ -1256,11 +1269,22 @@ function fitApp(){
   var wrap = document.getElementById('app-wrap');
   if(!wrap) return;
   wrap.style.transform = 'none';
-  var s = Math.min(window.innerWidth / DESIGN_W, MAX_SCALE);
-  if(s <= 1){ wrap.style.transform = 'none'; wrap.style.width = '100%'; return; }
+  wrap.style.width = DESIGN_W + 'px';
+  var naturalH = wrap.scrollHeight;
+  var scaleByW = window.innerWidth / DESIGN_W;
+  var scaleByH = window.innerHeight / naturalH;
+  var s = Math.min(scaleByW, scaleByH, MAX_SCALE);
+  if(s <= 1){
+    wrap.style.transform = 'none';
+    wrap.style.width = '100%';
+    document.body.style.height = '';
+    return;
+  }
   wrap.style.width = DESIGN_W + 'px';
   wrap.style.transform = 'scale(' + s + ')';
-  document.body.style.height = Math.round(wrap.offsetHeight * s) + 'px';
+  wrap.style.transformOrigin = 'top center';
+  document.body.style.height = Math.round(naturalH * s) + 'px';
+  document.body.style.overflowX = 'hidden';
 }
 window.addEventListener('resize', fitApp);
 window.addEventListener('orientationchange', fitApp);
@@ -1565,8 +1589,6 @@ arena.addEventListener('touchstart', function(e){
 arena.ontouchend=function(e){
   if(pulseMode!=='release') return;
   e.preventDefault();
-  if(!fingerDown) return;
-  fingerDown=false;
   if(!releaseReady) return;
   if(appState==='waiting'){earlyFail();}
   else if(appState==='go'){react();}
@@ -1635,10 +1657,10 @@ function startWaiting(){
   appState='waiting';arena.className='ready';
   showActions(false);arenaMsg.style.display='none';
   arenaIcon.textContent='';
-  // Para modo release simple: resetear releaseReady y esperar que el dedo se apoye
+  // Para modo release simple: siempre listo entre rondas
   if(pulseMode==='release'){
-    releaseReady=false;
     fingerDown=false;
+    releaseReady=true;
   }
   var delay=1500+Math.floor(Math.random()*2000);
   if(gameMode==='distractor'){
@@ -1740,9 +1762,11 @@ function react(){
   arena.className='';
   arenaMsg.style.display='none';showActions(false);
   updateGameStats();updateHistoryGame();updateProgress();
-  // Invalidar arena 300ms para evitar pulsaciones accidentales
-  arena.style.pointerEvents='none';
-  setTimeout(function(){ arena.style.pointerEvents=''; }, 300);
+  // Invalidar arena 300ms (solo en modos press, no release)
+  if(pulseMode!=='release'){
+    arena.style.pointerEvents='none';
+    setTimeout(function(){ arena.style.pointerEvents=''; }, 300);
+  }
 
   if(gameMode==='distractor'){
     if(validRounds<totalRounds){ startWaiting(); return; }
@@ -2254,11 +2278,22 @@ function fitApp(){
   var wrap = document.getElementById('app-wrap');
   if(!wrap) return;
   wrap.style.transform = 'none';
-  var s = Math.min(window.innerWidth / DESIGN_W, MAX_SCALE);
-  if(s <= 1){ wrap.style.transform = 'none'; wrap.style.width = '100%'; return; }
+  wrap.style.width = DESIGN_W + 'px';
+  var naturalH = wrap.scrollHeight;
+  var scaleByW = window.innerWidth / DESIGN_W;
+  var scaleByH = window.innerHeight / naturalH;
+  var s = Math.min(scaleByW, scaleByH, MAX_SCALE);
+  if(s <= 1){
+    wrap.style.transform = 'none';
+    wrap.style.width = '100%';
+    document.body.style.height = '';
+    return;
+  }
   wrap.style.width = DESIGN_W + 'px';
   wrap.style.transform = 'scale(' + s + ')';
-  document.body.style.height = Math.round(wrap.offsetHeight * s) + 'px';
+  wrap.style.transformOrigin = 'top center';
+  document.body.style.height = Math.round(naturalH * s) + 'px';
+  document.body.style.overflowX = 'hidden';
 }
 window.addEventListener('resize', fitApp);
 window.addEventListener('orientationchange', fitApp);
