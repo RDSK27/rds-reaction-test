@@ -1,9 +1,10 @@
-var CACHE = 'rds-reaction-v16';
+var CACHE = 'rds-reaction-v17';
 
 var PRECACHE = [
   '/rds-reaction-test/',
   '/rds-reaction-test/index.html',
-  '/rds-reaction-test/manifest.json'
+  '/rds-reaction-test/manifest.json',
+  '/rds-reaction-test/icon.jpg'
 ];
 
 var NO_CACHE = [
