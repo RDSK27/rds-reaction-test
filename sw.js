@@ -1,4 +1,4 @@
-var CACHE = 'rds-reaction-v33';
+var CACHE = 'rds-reaction-v36';
 
 var PRECACHE = [
   '/rds-reaction-test/',

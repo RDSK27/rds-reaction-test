@@ -90,6 +90,9 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
   background-position:center;
 }
 
+/* APP WRAP: cadena flex para que la pantalla activa haga scroll */
+#app-wrap { flex:1 1 auto; min-height:0; display:flex; flex-direction:column; width:100%; }
+
 /* SCREENS */
 .screen { display:none; width:100%; max-width:700px; margin-left:auto; margin-right:auto; padding:10px 14px 20px; flex-direction:column; gap:8px; }
 .screen.active { background:#ffffff !important; display:flex !important; visibility:visible !important; opacity:1 !important; flex:1 1 auto; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; }
@@ -557,6 +560,7 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
 .rank-full-name { color:#111; flex:1; font-size:0.72rem; font-weight:700; color:#111; }
 .rank-full-ms { font-size:0.72rem; font-weight:900; color:#b03020; }
 .rank-full-date { color:#999; font-size:0.5rem; color:#ccc; }
+.rank-full-sep { text-align:center; color:#bbb; font-size:0.85rem; letter-spacing:0.25em; padding:3px 0 1px; }
 .rank-full-empty { color:#999; text-align:center; padding:24px; font-size:0.62rem; color:#ccc; letter-spacing:0.1em; }
 .rank-back-btn {
   width:100%; padding:8px;
@@ -872,7 +876,7 @@ footer {
         <option value="VOL">Voleibol</option>
       </select>
     </div>
-  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v33</div>
+  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v36</div>
   </div>
   </div><!-- fin panel negro -->
   
@@ -2084,31 +2088,16 @@ function showRankSound(on){
 }
 
 function showFullRanking(){
+  // Entrar al ranking desde el menu: arrancar ocultando repetidos
   hideRepeated=true;
-  // Resetear siempre a: Normal, 10, Con sonido, Bajar
-  activeRankMode='normal';
-  activeRankTab=10;
-  activeRankSound=true;
-  activeRankPulse='press';
   var btn=document.getElementById('btn-hide-repeated');
   if(btn) btn.textContent='Mostrar repetidos';
-  document.getElementById('rmode-normal').className='rank-tab active';
-  document.getElementById('rmode-distractor').className='rank-tab';
-  document.getElementById('rmode-limite').className='rank-tab';
-  document.getElementById('rtab10').className='rank-tab active';
-  document.getElementById('rtab15').className='rank-tab';
-  document.getElementById('rtab30').className='rank-tab';
-  document.getElementById('rtab50').className='rank-tab';
-  document.getElementById('rsound-on').className='rank-tab active';
-  document.getElementById('rsound-off').className='rank-tab';
-  document.getElementById('rpulse-press').className='rank-tab active';
-  document.getElementById('rpulse-press2').className='rank-tab';
-  document.getElementById('rpulse-press2i').className='rank-tab';
-  document.getElementById('rpulse-release').className='rank-tab';
-  document.getElementById('rpulse-release2').className='rank-tab';
-  document.getElementById('rpulse-release2i').className='rank-tab';
+  // Mostrar el bucket que coincide con la seleccion de la pantalla de inicio
   showScreen('ranking');
-  renderFullRanking(10,'normal','press');
+  showRankMode(gameMode||'normal');
+  showRankTab(totalRounds||10);
+  showRankSound(soundMode);
+  showRankPulse(pulseMode||'press');
 }
 function showRankTab(n){
   activeRankTab=n;
@@ -2145,28 +2134,48 @@ function getHomeName(){
 }
 function renderRankList(list, el, m){
   list=filterRepeated(list);
-  list=list.slice(0,15);
+  var medals=['gold','silver','bronze'];
+  var meName=getHomeName();
+  // Posicion del usuario en la lista filtrada completa (antes de recortar a 15)
+  var myIdx=-1, myEntry=null;
+  if(meName){
+    for(var k=0;k<list.length;k++){
+      if((list[k].name||'').trim().toUpperCase()===meName){ myIdx=k; myEntry=list[k]; break; }
+    }
+  }
   el.innerHTML='';
-  if(!list.length){
+  var display=list.slice(0,15);
+  if(!display.length){
     var d=document.createElement('div');d.className='rank-full-empty';
     d.textContent='Sin resultados';el.appendChild(d);return;
   }
-  var medals=['gold','silver','bronze'];
-  var meName=getHomeName();
-  for(var i=0;i<list.length;i++){
-    var rowName=(list[i].name||'').trim().toUpperCase();
-    var isMe=meName && rowName===meName;
+  function buildRow(entry, posLabel, medalIdx, isMe){
     var row=document.createElement('div');row.className='rank-full-row'+(isMe?' rank-full-me':'');
-    var pos=document.createElement('div');pos.className='rank-full-pos'+(i<3?' '+medals[i]:'');pos.textContent=(i+1);
-    var nm=document.createElement('div');nm.className='rank-full-name';nm.textContent=list[i].name;
+    var pos=document.createElement('div');
+    pos.className='rank-full-pos'+(medalIdx>=0 && medalIdx<3?' '+medals[medalIdx]:'');
+    pos.textContent=posLabel;
+    var nm=document.createElement('div');nm.className='rank-full-name';nm.textContent=entry.name;
     var ms=document.createElement('div');ms.className='rank-full-ms';
-    if(m==='limite' && list[i].completed){
-      ms.textContent=list[i].completed+'/'+list[i].avg+' ms';
+    if(m==='limite' && entry.completed){
+      ms.textContent=entry.completed+'/'+entry.avg+' ms';
     } else {
-      ms.textContent=list[i].avg+' ms';
+      ms.textContent=entry.avg+' ms';
     }
-    var dt=document.createElement('div');dt.className='rank-full-date';dt.textContent=list[i].date||'';
-    row.appendChild(pos);row.appendChild(nm);row.appendChild(ms);row.appendChild(dt);el.appendChild(row);
+    var dt=document.createElement('div');dt.className='rank-full-date';dt.textContent=entry.date||'';
+    row.appendChild(pos);row.appendChild(nm);row.appendChild(ms);row.appendChild(dt);
+    return row;
+  }
+  for(var i=0;i<display.length;i++){
+    var rowName=(display[i].name||'').trim().toUpperCase();
+    var isMe=meName && rowName===meName;
+    el.appendChild(buildRow(display[i], (i+1), i, isMe));
+  }
+  // Si tengo marca en este ranking pero no entro en las 15 visibles, anadir mi fila con el puesto real
+  if(myEntry && myIdx>=15){
+    var sep=document.createElement('div');sep.className='rank-full-sep';sep.textContent='\u22EF';
+    el.appendChild(sep);
+    var posLabel=(myIdx+1>=100)?'100+':String(myIdx+1);
+    el.appendChild(buildRow(myEntry, posLabel, -1, true));
   }
 }
 
