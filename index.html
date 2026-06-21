@@ -872,7 +872,7 @@ footer {
         <option value="VOL">Voleibol</option>
       </select>
     </div>
-  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v32</div>
+  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v33</div>
   </div>
   </div><!-- fin panel negro -->
   
@@ -2145,6 +2145,7 @@ function getHomeName(){
 }
 function renderRankList(list, el, m){
   list=filterRepeated(list);
+  list=list.slice(0,15);
   el.innerHTML='';
   if(!list.length){
     var d=document.createElement('div');d.className='rank-full-empty';
@@ -2179,7 +2180,7 @@ function renderFullRanking(r,mode,pulse){
   var col='rank_'+r+'_'+m+'_'+p+'_'+snd;
   if(db){
     var col2=col;
-    db.collection(col2).limit(50).get().then(function(snap){
+    db.collection(col2).limit(100).get().then(function(snap){
       var list=[];
       snap.forEach(function(doc){ list.push(doc.data()); });
       // Ordenar en cliente
@@ -2191,7 +2192,6 @@ function renderFullRanking(r,mode,pulse){
       } else {
         list.sort(function(a,b){ return (a.avg||9999)-(b.avg||9999); });
       }
-      list=list.slice(0,15);
       renderRankList(list,el,m);
     }).catch(function(){
       renderRankList(getRanking(r,m,p),el,m);
