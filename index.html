@@ -546,6 +546,10 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
   display:flex; align-items:center; gap:8px;
   padding:5px 14px; border-bottom:1px solid #f0f0f0;
 }
+.rank-full-row.rank-full-me {
+  background:#fff2ee; box-shadow:inset 3px 0 0 #b03020;
+}
+.rank-full-row.rank-full-me .rank-full-name { color:#b03020; font-weight:900; }
 .rank-full-pos { font-size:0.72rem; font-weight:900; color:#ccc; width:22px; }
 .rank-full-pos.gold { color:#c9a227; }
 .rank-full-pos.silver { color:#8e9eab; }
@@ -868,7 +872,7 @@ footer {
         <option value="VOL">Voleibol</option>
       </select>
     </div>
-  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v29</div>
+  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v31</div>
   </div>
   </div><!-- fin panel negro -->
   
@@ -1008,7 +1012,7 @@ footer {
     <button class="game-ctrl-btn" style="border-right:none;border-left:1px solid #333;" onclick="repeatGame()">↺ Repetir</button>
   </div>
   <div style="display:flex; justify-content:center; padding:8px 16px 0;">
-    <button id="btn-hide-repeated" style="width:60%; padding:7px; font-size:0.65rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; background:#111; color:#fff; border:none; cursor:pointer; border-radius:4px;" onclick="toggleHideRepeated()">Ocultar repetidos</button>
+    <button id="btn-hide-repeated" style="width:60%; padding:7px; font-size:0.65rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; background:#111; color:#fff; border:none; cursor:pointer; border-radius:4px;" onclick="toggleHideRepeated()">Mostrar repetidos</button>
   </div>
 </div>
 
@@ -2082,14 +2086,14 @@ function showRankSound(on){
 }
 
 function showFullRanking(){
-  hideRepeated=false;
+  hideRepeated=true;
   // Resetear siempre a: Normal, 10, Con sonido, Bajar
   activeRankMode='normal';
   activeRankTab=10;
   activeRankSound=true;
   activeRankPulse='press';
   var btn=document.getElementById('btn-hide-repeated');
-  if(btn) btn.textContent='Ocultar repetidos';
+  if(btn) btn.textContent='Mostrar repetidos';
   document.getElementById('rmode-normal').className='rank-tab active';
   document.getElementById('rmode-distractor').className='rank-tab';
   document.getElementById('rmode-limite').className='rank-tab';
@@ -2133,6 +2137,14 @@ function showRankPulse(p){
   document.getElementById('rpulse-release2i').className='rank-tab'+(p==='release2i'?' active':'');
   renderFullRanking(activeRankTab,activeRankMode,activeRankPulse);
 }
+function getHomeName(){
+  var iniEl=document.getElementById('user-ini-input');
+  var sptEl=document.getElementById('user-sport-select');
+  if(!iniEl||!sptEl) return '';
+  var ini=(iniEl.value||'').trim().toUpperCase();
+  if(!ini) return '';
+  return ini+'-'+(sptEl.value||'').trim().toUpperCase();
+}
 function renderRankList(list, el, m){
   list=filterRepeated(list);
   el.innerHTML='';
@@ -2141,8 +2153,11 @@ function renderRankList(list, el, m){
     d.textContent='Sin resultados';el.appendChild(d);return;
   }
   var medals=['gold','silver','bronze'];
+  var meName=getHomeName();
   for(var i=0;i<list.length;i++){
-    var row=document.createElement('div');row.className='rank-full-row';
+    var rowName=(list[i].name||'').trim().toUpperCase();
+    var isMe=meName && rowName===meName;
+    var row=document.createElement('div');row.className='rank-full-row'+(isMe?' rank-full-me':'');
     var pos=document.createElement('div');pos.className='rank-full-pos'+(i<3?' '+medals[i]:'');pos.textContent=(i+1);
     var nm=document.createElement('div');nm.className='rank-full-name';nm.textContent=list[i].name;
     var ms=document.createElement('div');ms.className='rank-full-ms';
@@ -2213,13 +2228,15 @@ function toggleHideRepeated(){
 }
 
 function filterRepeated(list){
-  if(!hideRepeated) return list;
+  // Ocultar repetidos: 1 por nombre. Mostrar repetidos: hasta 3 por nombre (los 3 mejores).
+  var max=hideRepeated?1:3;
   var seen={};
   var result=[];
   for(var i=0;i<list.length;i++){
     var name=(list[i].name||'').toLowerCase().trim();
-    if(!seen[name]){
-      seen[name]=true;
+    var c=seen[name]||0;
+    if(c<max){
+      seen[name]=c+1;
       result.push(list[i]);
     }
   }
