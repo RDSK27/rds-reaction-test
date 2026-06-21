@@ -872,7 +872,7 @@ footer {
         <option value="VOL">Voleibol</option>
       </select>
     </div>
-  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v31</div>
+  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v32</div>
   </div>
   </div><!-- fin panel negro -->
   
@@ -1902,8 +1902,6 @@ function saveFromResults(){
   var completedR=gameMode==='limite'?limiteRoundsCompleted:totalRounds;
   addToRanking(totalRounds,name,currentAvg,gameMode,completedR);
   activeRankingTab=totalRounds;
-  document.getElementById('results-name-input').value=savedName||savedUserName||'';
-  document.getElementById('results-name-input').placeholder='Guardado: '+name;
   var msg=document.getElementById('results-saved-msg');
   if(msg){msg.style.display='block';}
 }
