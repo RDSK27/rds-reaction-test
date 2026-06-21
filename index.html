@@ -523,10 +523,10 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
 
 /* FULL RANKING SCREEN */
 .rank-screen-title { color:#111;
-  font-size:1.4rem; font-weight:900;
+  font-size:1.2rem; font-weight:900;
   letter-spacing:0.1em; text-transform:uppercase;
   color:#111; text-align:center;
-  background:#fff; padding:18px 14px 14px;
+  background:#fff; padding:9px 14px 7px;
   border-bottom:3px solid #b03020;
 }
 .rank-tabs { display:flex; margin-bottom:0; margin-top:0; }
@@ -560,7 +560,6 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
 .rank-full-name { color:#111; flex:1; font-size:0.72rem; font-weight:700; color:#111; }
 .rank-full-ms { font-size:0.72rem; font-weight:900; color:#b03020; }
 .rank-full-date { color:#999; font-size:0.5rem; color:#ccc; }
-.rank-full-sep { text-align:center; color:#bbb; font-size:0.85rem; letter-spacing:0.25em; padding:3px 0 1px; }
 .rank-full-empty { color:#999; text-align:center; padding:24px; font-size:0.62rem; color:#ccc; letter-spacing:0.1em; }
 .rank-back-btn {
   width:100%; padding:8px;
@@ -876,7 +875,7 @@ footer {
         <option value="VOL">Voleibol</option>
       </select>
     </div>
-  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v36</div>
+  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v37</div>
   </div>
   </div><!-- fin panel negro -->
   
@@ -2172,8 +2171,6 @@ function renderRankList(list, el, m){
   }
   // Si tengo marca en este ranking pero no entro en las 15 visibles, anadir mi fila con el puesto real
   if(myEntry && myIdx>=15){
-    var sep=document.createElement('div');sep.className='rank-full-sep';sep.textContent='\u22EF';
-    el.appendChild(sep);
     var posLabel=(myIdx+1>=100)?'100+':String(myIdx+1);
     el.appendChild(buildRow(myEntry, posLabel, -1, true));
   }
