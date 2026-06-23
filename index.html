@@ -95,7 +95,8 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
 
 /* SCREENS */
 .screen { display:none; width:100%; max-width:700px; margin-left:auto; margin-right:auto; padding:10px 14px 20px; flex-direction:column; gap:8px; }
-.screen.active { background:#ffffff !important; display:flex !important; visibility:visible !important; opacity:1 !important; flex:1 1 auto; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.screen-scroll { flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; display:flex; flex-direction:column; gap:8px; width:100%; }
+.screen.active { background:#ffffff !important; display:flex !important; visibility:visible !important; opacity:1 !important; flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; }
 /* FONDO METALIZADO SOLO EN EL HOME (gana al background blanco de .screen.active) */
 #screen-home.active{
   background-color:#c4c8cc !important;
@@ -265,9 +266,9 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
   box-sizing:border-box;
   margin-bottom:0;
 }
-.r2-zone { background:#fff; border-color:var(--border-color);
+.r2-zone { background:#111; border-color:var(--border-color);
   flex:1; display:flex; align-items:center; justify-content:center;
-  background:#fff; border:1px solid #ddd;
+  background:#111; border:1px solid #ddd;
   cursor:default;
   user-select:none; -webkit-user-select:none;
   box-sizing:border-box;
@@ -883,7 +884,7 @@ footer {
         <option value="VOL">Voleibol</option>
       </select>
     </div>
-  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v42</div>
+  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v47</div>
   </div>
   </div><!-- fin panel negro -->
   
@@ -964,7 +965,8 @@ footer {
 
 
 <!-- RESULTS -->
-<div class="screen" id="screen-results" style="justify-content:flex-start;">
+<div class="screen" id="screen-results" style="justify-content:flex-start;padding-bottom:0;">
+  <div class="screen-scroll">
   <div class="results-summary">
     <div class="results-name" id="results-name-display"></div>
     <div class="results-avg" id="results-avg-display">--</div>
@@ -977,6 +979,7 @@ footer {
     <div class="section-title">Historial de rondas</div>
     <div class="history-grid" id="history-grid-results"></div>
   </div>
+  </div><!-- fin screen-scroll -->
   <div style="margin-top:16px;">
     <div style="display:flex;width:calc(100% - 28px);margin:0 14px;gap:0;">
       <button class="results-save-btn" onclick="saveFromResults()">Guardar</button>
@@ -988,11 +991,11 @@ footer {
       <button class="game-ctrl-btn" style="border-right:none;border-left:1px solid #333;" onclick="repeatGame()">↺ Repetir</button>
     </div>
   </div>
-  <div id="results-saved-msg" style="display:none;text-align:center;font-size:0.62rem;color:#27ae60;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;padding:8px 0;">Guardado correctamente</div>
 </div>
 
 <!-- FULL RANKING -->
-<div class="screen" id="screen-ranking">
+<div class="screen" id="screen-ranking" style="padding-bottom:0;">
+  <div class="screen-scroll">
   <div class="rank-screen-title">Ranking completo</div>
   <div class="rank-tabs" style="margin-bottom:0;">
     <button class="rank-tab active" id="rmode-normal" onclick="showRankMode('normal')">Normal</button>
@@ -1018,7 +1021,8 @@ footer {
     <button class="rank-tab" id="rpulse-release2i" onclick="showRankPulse('release2i')">Subir 2*</button>
   </div>
   <div class="rank-full-list" id="rank-full-list"></div>
-  <div style="display:flex; justify-content:center; padding:8px 16px 8px;">
+  </div><!-- fin screen-scroll -->
+  <div style="display:flex; justify-content:center; padding:8px 16px 12px;">
     <button id="btn-hide-repeated" style="width:60%; padding:7px; font-size:0.65rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; background:#111; color:#fff; border:none; cursor:pointer; border-radius:4px;" onclick="toggleHideRepeated()">Mostrar repetidos</button>
   </div>
   <div class="results-actions">
@@ -1908,21 +1912,17 @@ function saveFromResults(){
   }
   // Atenuar botón guardar
   var saveBtn=document.getElementById('results-save-btn')||document.querySelector('.results-save-btn');
-  if(saveBtn){ saveBtn.style.opacity='0.4'; saveBtn.disabled=true; }
+  if(saveBtn){ saveBtn.style.background='#888'; saveBtn.style.borderColor='#888'; saveBtn.style.cursor='default'; saveBtn.disabled=true; saveBtn.textContent='Guardado'; }
   savedName=name;
   var completedR=gameMode==='limite'?limiteRoundsCompleted:totalRounds;
   addToRanking(totalRounds,name,currentAvg,gameMode,completedR);
   activeRankingTab=totalRounds;
-  var msg=document.getElementById('results-saved-msg');
-  if(msg){msg.style.display='block';}
 }
 function goToResults(){
   var saveBtn=document.getElementById('results-save-btn')||document.querySelector('.results-save-btn');
-  if(saveBtn){ saveBtn.style.opacity=''; saveBtn.disabled=false; }
+  if(saveBtn){ saveBtn.style.opacity=''; saveBtn.style.background=''; saveBtn.style.borderColor=''; saveBtn.style.cursor=''; saveBtn.disabled=false; saveBtn.textContent='Guardar'; }
   var arena=document.getElementById('arena');
   if(arena) arena.style.pointerEvents='';
-  var msg=document.getElementById('results-saved-msg');
-  if(msg) msg.style.display='none';
 
   document.getElementById('results-name-display').textContent=savedName||'';
   if(gameMode==='limite'){
