@@ -103,7 +103,6 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
   background-color:#c4c8cc !important;
   background-image:
     linear-gradient(115deg,rgba(255,255,255,0) 30%,rgba(255,255,255,0.38) 45%,rgba(255,255,255,0) 60%),
-    repeating-linear-gradient(90deg,rgba(255,255,255,0.16) 0px,rgba(255,255,255,0.16) 1px,rgba(0,0,0,0.05) 1px,rgba(0,0,0,0.05) 3px),
     linear-gradient(180deg,#e9ecef 0%,#c9cdd1 50%,#b0b4b8 100%) !important;
 }
 
@@ -277,6 +276,15 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
 .r2-zone.active-go {
   background: radial-gradient(ellipse at center, #ff3300 0%, #cc0000 50%, #990000 100%);
   border-color:#cc0000; box-sizing:border-box;
+}
+#arena.nogo {
+  background: radial-gradient(ellipse at center, #ffd633 0%, #f0b000 50%, #cc8800 100%);
+  border-color:#e0a800;
+  box-shadow:0 0 20px rgba(220,170,0,0.3);
+}
+.r2-zone.active-nogo {
+  background: radial-gradient(ellipse at center, #ffd633 0%, #f0b000 50%, #cc8800 100%);
+  border-color:#e0a800; box-sizing:border-box;
 }
 .r2-error-overlay {
   display:none;
@@ -657,6 +665,7 @@ footer {
   top:0;left:0;right:0;bottom:0;
   background:rgba(0,0,0,0.85);
   z-index:999;
+  pointer-events:none;
   align-items:center;
   justify-content:center;
   flex-direction:column;
@@ -804,6 +813,7 @@ footer {
     <div class="selector-label">Modo de juego</div>
     <div class="seg-group">
       <button class="seg-btn active" id="mode-btn-normal" onclick="setMode('normal')">Normal</button>
+      <button class="seg-btn" id="mode-btn-gonogo" onclick="setMode('gonogo')">Go/NoGo</button>
       <button class="seg-btn" id="mode-btn-distractor" onclick="setMode('distractor')">Distractor</button>
       <button class="seg-btn" id="mode-btn-limite" onclick="setMode('limite')">Limite</button>
     </div>
@@ -885,7 +895,7 @@ footer {
         <option value="VOL">Voleibol</option>
       </select>
     </div>
-  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v49</div>
+  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v55</div>
   </div>
   </div><!-- fin panel negro -->
   
@@ -1000,6 +1010,7 @@ footer {
   <div class="rank-screen-title">Ranking completo</div>
   <div class="rank-tabs" style="margin-bottom:0;">
     <button class="rank-tab active" id="rmode-normal" onclick="showRankMode('normal')">Normal</button>
+    <button class="rank-tab" id="rmode-gonogo" onclick="showRankMode('gonogo')">Go/NoGo</button>
     <button class="rank-tab" id="rmode-distractor" onclick="showRankMode('distractor')">Distractor</button>
     <button class="rank-tab" id="rmode-limite" onclick="showRankMode('limite')">Limite</button>
   </div>
@@ -1022,14 +1033,14 @@ footer {
     <button class="rank-tab" id="rpulse-release2i" onclick="showRankPulse('release2i')">Subir 2*</button>
   </div>
   <div class="rank-full-list" id="rank-full-list"></div>
-  </div><!-- fin screen-scroll -->
-  <div style="display:flex; justify-content:center; padding:8px 16px 12px;">
+    <div style="display:flex; justify-content:center; padding:8px 16px 12px;">
     <button id="btn-hide-repeated" style="width:60%; padding:7px; font-size:0.65rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; background:#111; color:#fff; border:none; cursor:pointer; border-radius:4px;" onclick="toggleHideRepeated()">Mostrar repetidos</button>
   </div>
   <div class="results-actions">
     <button class="game-ctrl-btn" onclick="goHome()">&#8592; Inicio</button>
     <button class="game-ctrl-btn" style="border-right:none;border-left:1px solid #333;" onclick="repeatGame()">↺ Repetir</button>
   </div>
+  </div><!-- fin screen-scroll -->
 </div>
 
 <footer>RDS Psicologia Deportiva &mdash; Test de Velocidad de Reaccion</footer>
@@ -1073,6 +1084,7 @@ function saveUserName(){
 var appState='idle',startTime=0,waitTimer=null,results=[],totalRounds=10,validRounds=0,currentAvg=0,savedName='',activeRankingTab=10;
 var fingerDown=false,releaseReady=false,r2ActiveSide='',r2FingerLeft=false,r2FingerRight=false;
 var gameMode='normal';
+var gonogoTrials=[],gonogoNoGoTimer=null;
 var pulseMode='press';
 
 function setPulseMode(m){
@@ -1178,8 +1190,8 @@ function setMode(m){
   gameMode=m;
   var son=document.getElementById('sound-btn-on');
   var soff=document.getElementById('sound-btn-off');
-  if(m==='distractor'){
-    // En distractor: forzar sin sonido y bloquear botones
+  if(m==='distractor'||m==='gonogo'){
+    // En distractor y Go/NoGo: forzar sin sonido y bloquear botones
     soundMode=false;
     if(son){son.className='seg-btn';son.style.opacity='0.35';son.style.pointerEvents='none';}
     if(soff){soff.className='seg-btn active';soff.style.opacity='0.35';soff.style.pointerEvents='none';}
@@ -1207,6 +1219,7 @@ function setMode(m){
   var r2ibtn=document.getElementById('pulse-btn-release2i');
   if(r2ibtn) r2ibtn.className='seg-btn'+(pulseMode==='release2i'?' active':'')+dis2;
   document.getElementById('mode-btn-normal').className='seg-btn'+(m==='normal'?' active':'');
+  document.getElementById('mode-btn-gonogo').className='seg-btn'+(m==='gonogo'?' active':'');
   document.getElementById('mode-btn-distractor').className='seg-btn'+(m==='distractor'?' active':'');
   document.getElementById('mode-btn-limite').className='seg-btn'+(m==='limite'?' active':'');
   playClick();
@@ -1324,6 +1337,14 @@ function homeSetRounds(n){
   playClick();
 }
 function goHome(){if(waitTimer)clearTimeout(waitTimer);appState='idle';showScreen('home');showTab(activeRankingTab);}
+function buildGonogoTrials(){
+  var n=totalRounds;var minRed=Math.ceil(n*0.30);
+  var arr=[];for(var i=0;i<n;i++) arr.push(Math.random()<0.5);
+  var reds=0;for(var k=0;k<n;k++) if(arr[k]) reds++;
+  while(reds<minRed){var idxs=[];for(var j=0;j<n;j++) if(!arr[j]) idxs.push(j);if(!idxs.length)break;arr[idxs[Math.floor(Math.random()*idxs.length)]]=true;reds++;}
+  if(reds===n){arr[Math.floor(Math.random()*n)]=false;}
+  return arr;
+}
 function prepareAndCountdown(){
   saveUserName();
   // Inicializar voz en gesto directo del usuario para Safari iOS
@@ -1338,11 +1359,6 @@ function prepareAndCountdown(){
   recentMsgs=[];
   if(gameMode==='limite')initLimiteMode();
   showScreen('game');
-  if(pulseMode==='release2'||pulseMode==='press2'||pulseMode==='press2i'||pulseMode==='release2i'){
-    addR2Listeners();
-
-
-  }
   startCountdown(function(){
     startWaiting();
   });
@@ -1636,6 +1652,7 @@ arena.addEventListener('touchstart', function(e){
   // Modo press normal
   if(appState==='waiting'){earlyFail();}
   else if(appState==='go'){react();}
+  else if(appState==='nogo'){nogoFail();}
 }, {passive:false});
 
 // Release: ontouchstart y ontouchend asignados directamente
@@ -1645,6 +1662,7 @@ arena.ontouchend=function(e){
   if(!releaseReady) return;
   if(appState==='waiting'){earlyFail();}
   else if(appState==='go'){react();}
+  else if(appState==='nogo'){nogoFail();}
 };
 
 function setupR2Zones(goMode){
@@ -1703,7 +1721,7 @@ function showR2Error(msg, sub){
 }
 
 
-document.addEventListener('keydown',function(e){if(e.keyCode===32){e.preventDefault();if(appState==='waiting'){earlyFail();}else if(appState==='go'){react();}}});
+document.addEventListener('keydown',function(e){if(e.keyCode===32){e.preventDefault();if(appState==='waiting'){earlyFail();}else if(appState==='go'){react();}else if(appState==='nogo'){nogoFail();}}});
 
 function startWaiting(){
   if(waitTimer)clearTimeout(waitTimer);
@@ -1750,6 +1768,10 @@ function startWaiting(){
     arenaMain.textContent='';arenaMain.style.fontSize='2.2rem';
     arenaSub.textContent='';
     if(pulseMode==='release2'||pulseMode==='press2'||pulseMode==='press2i'||pulseMode==='release2i'){setupR2Zones(false);}
+  } else if(gameMode==='gonogo'){
+    arenaMain.textContent='';arenaMain.style.fontSize='2.2rem';
+    arenaSub.textContent='';
+    if(pulseMode==='release2'||pulseMode==='press2'||pulseMode==='press2i'||pulseMode==='release2i'){setupR2Zones(false);}
   } else {
     var wMsgs2=['PREPARATE','ATENTO','FOCUS','CONCENTRADO','FIJATE','ALERTA','LISTO','EN GUARDIA','CUIDADO'];
     arenaMain.textContent=wMsgs2[Math.floor(Math.random()*wMsgs2.length)];arenaMain.style.color='#fff';arenaMain.style.fontSize='2.2rem';
@@ -1776,6 +1798,22 @@ function startWaiting(){
   waitTimer=setTimeout(showGo,delay);
 }
 function showGo(){
+  if(gameMode==='gonogo' && !gonogoTrials[validRounds]){
+    appState='nogo';
+    document.getElementById('limite-display').style.visibility='hidden';
+    arenaIcon.textContent='';
+    if(pulseMode==='release2'||pulseMode==='press2'||pulseMode==='press2i'||pulseMode==='release2i'){
+      r2ActiveSide=Math.random()<0.5?'left':'right';
+      var lz=document.getElementById('r2-left'),rz=document.getElementById('r2-right');
+      if(lz) lz.className='r2-zone'+(r2ActiveSide==='left'?' active-nogo':'');
+      if(rz) rz.className='r2-zone'+(r2ActiveSide==='right'?' active-nogo':'');
+    } else {
+      arena.className='nogo';arenaMain.textContent='';arenaSub.textContent='';
+    }
+    if(soundMode) playBeep();
+    gonogoNoGoTimer=setTimeout(gonogoYellowDone,700);
+    return;
+  }
   appState='go';startTime=Date.now();
   document.getElementById('limite-display').style.visibility='hidden';
   if(gameMode==='limite') showLimiteInBest();
@@ -1790,11 +1828,9 @@ function showGo(){
       arenaMain.textContent='';arenaSub.textContent='';
     } else if(gameMode==='normal'){
       arenaMain.textContent='';arenaSub.textContent='';
-      if(pulseMode==='release'){arenaSub.textContent='LEVANTA';arenaSub.style.color='rgba(255,255,255,0.8)';}
     } else {
       arenaMain.textContent='';
       arenaSub.textContent='';
-      if(pulseMode==='release'){arenaSub.textContent='LEVANTA';arenaSub.style.color='rgba(255,255,255,0.8)';}
     }
   }
   if(gameMode!=='distractor' && soundMode) playBeep();
@@ -1848,11 +1884,29 @@ function react(){
     setTimeout(function(){if(appState==='recording')startWaiting();},400);
   }
 }
+function gonogoYellowDone(){
+  if(appState!=='nogo') return;
+  appState='recording';validRounds++;
+  arena.className='';
+  var lz=document.getElementById('r2-left'),rz=document.getElementById('r2-right');
+  if(lz) lz.className='r2-zone'; if(rz) rz.className='r2-zone';
+  document.getElementById('stat-rounds').textContent=validRounds+'/'+totalRounds;
+  updateProgress();
+  if(validRounds>=totalRounds){
+    appState='finished';
+    var total=0;for(var i=0;i<results.length;i++)total+=results[i];
+    currentAvg=results.length?Math.round(total/results.length):0;
+    setTimeout(showSaveScreen,800);
+  } else {
+    setTimeout(function(){if(appState==='recording')startWaiting();},400);
+  }
+}
+function nogoFail(){if(gonogoNoGoTimer)clearTimeout(gonogoNoGoTimer);showFail('nogo',0);}
 function earlyFail(){if(waitTimer)clearTimeout(waitTimer);showFail('early',0);}
 function showFail(type,ms){
   appState='failed';
   if(pulseMode==='release2'||pulseMode==='press2'||pulseMode==='press2i'||pulseMode==='release2i'){
-    var sub=type==='early'?'PULSASTE ANTES DE LA SENAL':(type==='wrong'?'LADO INCORRECTO':'RESULTADO DEMASIADO RAPIDO: '+ms+' ms');
+    var sub=type==='early'?'PULSASTE ANTES DE LA SENAL':(type==='wrong'?'LADO INCORRECTO':(type==='nogo'?'REACCIONASTE EN UN NO-GO':'RESULTADO DEMASIADO RAPIDO: '+ms+' ms'));
     showR2Error('EJERCICIO ANULADO',sub);
     return;
   }
@@ -1861,6 +1915,11 @@ function showFail(type,ms){
     arenaMain.textContent='EJERCICIO ANULADO';arenaMain.style.color='#fff';arenaMain.style.fontSize='1.5rem';
     arenaSub.textContent='PULSASTE ANTES DE LA SENAL';arenaSub.style.color='#f0a0a0';
     arenaMsg.textContent=randMsg(MSG_EARLY);arenaMsg.style.color='#bbb';
+  } else if(type==='nogo'){
+    arena.className='fail-early';arenaIcon.textContent='';
+    arenaMain.textContent='EJERCICIO ANULADO';arenaMain.style.color='#fff';arenaMain.style.fontSize='1.5rem';
+    arenaSub.textContent='REACCIONASTE EN UN NO-GO';arenaSub.style.color='#f0a0a0';
+    arenaMsg.textContent='El amarillo era una senal de NO reaccionar.';arenaMsg.style.color='#bbb';
   } else {
     arena.className='fail-lucky';arenaIcon.textContent='';
     arenaMain.textContent='EJERCICIO ANULADO';arenaMain.style.color='#c07941';arenaMain.style.fontSize='1.5rem';
@@ -2011,6 +2070,7 @@ function updateProgress(){
 }
 function resetGameState(){
   if(waitTimer)clearTimeout(waitTimer);
+  if(gonogoNoGoTimer)clearTimeout(gonogoNoGoTimer);
   appState='idle';startTime=0;results=[];validRounds=0;currentAvg=0;savedName='';
   arena.className='';showActions(false);arenaMsg.style.display='none';arenaIcon.textContent='';
   arenaMain.textContent='...';arenaMain.style.color='#fff';arenaMain.style.fontSize='2.2rem';
@@ -2046,6 +2106,7 @@ function resetGameState(){
   document.getElementById('meter-needle').style.left='0%';
   document.getElementById('meter-rating').textContent=' ';
   document.getElementById('meter-label').textContent='Ultimo resultado';
+  gonogoTrials = (gameMode==='gonogo') ? buildGonogoTrials() : [];
 }
 function resetGame(){
   resetGameState();
@@ -2115,6 +2176,7 @@ function showRankTab(n){
 function showRankMode(m){
   activeRankMode=m;
   document.getElementById('rmode-normal').className='rank-tab'+(m==='normal'?' active':'');
+  document.getElementById('rmode-gonogo').className='rank-tab'+(m==='gonogo'?' active':'');
   document.getElementById('rmode-distractor').className='rank-tab'+(m==='distractor'?' active':'');
   document.getElementById('rmode-limite').className='rank-tab'+(m==='limite'?' active':'');
   renderFullRanking(activeRankTab,activeRankMode,activeRankPulse);
@@ -2268,6 +2330,7 @@ function addR2Listeners(){
     if(pulseMode==='press2'||pulseMode==='press2i'){
       e.preventDefault();
       if(appState==='waiting'){earlyFail();return;}
+      if(appState==='nogo'){nogoFail();return;}
       if(appState==='go'){
         var correct=pulseMode==='press2i'?'right':'left';
         if(correct===r2ActiveSide?'left':correct===r2ActiveSide){react();}
@@ -2285,6 +2348,7 @@ function addR2Listeners(){
     e.preventDefault();
     r2FingerLeft=false;
     if(appState==='waiting'){earlyFail();return;}
+    if(appState==='nogo'){nogoFail();return;}
     if(appState==='go'){
       setTimeout(function(){
         if(!r2FingerRight){showFail('wrong',0);return;}
@@ -2301,6 +2365,7 @@ function addR2Listeners(){
     if(pulseMode==='press2'||pulseMode==='press2i'){
       e.preventDefault();
       if(appState==='waiting'){earlyFail();return;}
+      if(appState==='nogo'){nogoFail();return;}
       if(appState==='go'){
         if(pulseMode==='press2i'){
           if('right'!==r2ActiveSide){react();}else{showFail('wrong',0);}
@@ -2315,6 +2380,7 @@ function addR2Listeners(){
     e.preventDefault();
     r2FingerRight=false;
     if(appState==='waiting'){earlyFail();return;}
+    if(appState==='nogo'){nogoFail();return;}
     if(appState==='go'){
       setTimeout(function(){
         if(!r2FingerLeft){showFail('wrong',0);return;}
