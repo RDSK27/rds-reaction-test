@@ -99,6 +99,7 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
 .screen.active { background:#ffffff !important; display:flex !important; visibility:visible !important; opacity:1 !important; flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; }
 /* FONDO METALIZADO SOLO EN EL HOME (gana al background blanco de .screen.active) */
 #screen-home.active{
+  max-width:none !important;
   background-color:#c4c8cc !important;
   background-image:
     linear-gradient(115deg,rgba(255,255,255,0) 30%,rgba(255,255,255,0.38) 45%,rgba(255,255,255,0) 60%),
@@ -884,7 +885,7 @@ footer {
         <option value="VOL">Voleibol</option>
       </select>
     </div>
-  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v47</div>
+  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v49</div>
   </div>
   </div><!-- fin panel negro -->
   
@@ -1967,9 +1968,6 @@ function renderChart(){
   ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);
   for(var n=1;n<pts.length;n++)ctx.lineTo(pts[n].x,pts[n].y);
   ctx.strokeStyle='#b03020';ctx.lineWidth=2;ctx.stroke();
-  for(var p=0;p<pts.length;p++){
-    ctx.beginPath();ctx.arc(pts[p].x,pts[p].y,3,0,6.28);ctx.fillStyle='#b03020';ctx.fill();
-  }
 }
 function updateGameStats(){
   if(!results.length)return;
