@@ -895,7 +895,7 @@ footer {
         <option value="VOL">Voleibol</option>
       </select>
     </div>
-  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v55</div>
+  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v56</div>
   </div>
   </div><!-- fin panel negro -->
   
@@ -2252,21 +2252,25 @@ function renderFullRanking(r,mode,pulse){
   el.innerHTML='<div class="rank-full-empty">Cargando...</div>';
   var snd=(typeof activeRankSound!=='undefined'?activeRankSound:soundMode)?'sound':'nosound';
   var col='rank_'+r+'_'+m+'_'+p+'_'+snd;
+  var legacyCol='rank_'+r+'_'+m+'_'+p; // colecciones antiguas, sin sufijo de sonido
+  function ordenarYpintarRank(list){
+    if(m==='limite'){
+      list.sort(function(a,b){
+        if((b.completed||0)!==(a.completed||0)) return (b.completed||0)-(a.completed||0);
+        return (a.avg||9999)-(b.avg||9999);
+      });
+    } else {
+      list.sort(function(a,b){ return (a.avg||9999)-(b.avg||9999); });
+    }
+    renderRankList(list,el,m);
+  }
   if(db){
-    var col2=col;
-    db.collection(col2).limit(100).get().then(function(snap){
+    var pNew=db.collection(col).limit(100).get();
+    var pLeg=db.collection(legacyCol).limit(100).get().catch(function(){return null;});
+    Promise.all([pNew,pLeg]).then(function(snaps){
       var list=[];
-      snap.forEach(function(doc){ list.push(doc.data()); });
-      // Ordenar en cliente
-      if(m==='limite'){
-        list.sort(function(a,b){
-          if((b.completed||0)!==(a.completed||0)) return (b.completed||0)-(a.completed||0);
-          return (a.avg||9999)-(b.avg||9999);
-        });
-      } else {
-        list.sort(function(a,b){ return (a.avg||9999)-(b.avg||9999); });
-      }
-      renderRankList(list,el,m);
+      snaps.forEach(function(snap){ if(snap){ snap.forEach(function(doc){ list.push(doc.data()); }); } });
+      ordenarYpintarRank(list);
     }).catch(function(){
       renderRankList(getRanking(r,m,p),el,m);
     });
