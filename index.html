@@ -571,13 +571,13 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
   background:#fff2ee; box-shadow:inset 3px 0 0 #b03020;
 }
 .rank-full-row.rank-full-me .rank-full-name { color:#b03020; font-weight:900; }
-.rank-full-pos { font-size:0.72rem; font-weight:900; color:#ccc; width:22px; }
+.rank-full-pos { font-size:0.72rem; font-weight:900; color:#555; width:22px; }
 .rank-full-pos.gold { color:#c9a227; }
 .rank-full-pos.silver { color:#8e9eab; }
 .rank-full-pos.bronze { color:#c07941; }
 .rank-full-name { color:#111; flex:1; font-size:0.72rem; font-weight:700; color:#111; }
 .rank-full-ms { font-size:0.72rem; font-weight:900; color:#b03020; }
-.rank-full-date { color:#999; font-size:0.5rem; color:#ccc; }
+.rank-full-date { font-size:0.5rem; color:#555; }
 .rank-full-empty { color:#999; text-align:center; padding:24px; font-size:0.62rem; color:#ccc; letter-spacing:0.1em; }
 .rank-back-btn {
   width:100%; padding:8px;
@@ -752,17 +752,19 @@ footer {
 </style>
   <link rel="manifest" href="/manifest.json">
   <script>
-    // Bloquear scroll y zoom SOLO en pantalla de ejercicio
-    document.addEventListener('touchmove', function(e){
-      var gameActive = document.getElementById('screen-game') &&
-        document.getElementById('screen-game').classList.contains('active');
-      if(gameActive){ e.preventDefault(); }
-    }, {passive:false});
-    document.addEventListener('gesturestart', function(e){
-      var gameActive = document.getElementById('screen-game') &&
-        document.getElementById('screen-game').classList.contains('active');
-      if(gameActive){ e.preventDefault(); }
-    }, {passive:false});
+    // Bloquear scroll y zoom SOLO en pantalla de ejercicio.
+    // Los listeners se anclan al propio #screen-game (no a document) para que en
+    // iPad NO interfieran con el teclado del INI ni con el selector de deporte.
+    document.addEventListener('DOMContentLoaded', function(){
+      var sg=document.getElementById('screen-game');
+      if(!sg) return;
+      sg.addEventListener('touchmove', function(e){
+        if(sg.classList.contains('active')){ e.preventDefault(); }
+      }, {passive:false});
+      sg.addEventListener('gesturestart', function(e){
+        if(sg.classList.contains('active')){ e.preventDefault(); }
+      }, {passive:false});
+    });
 
     if('serviceWorker' in navigator){
       window.addEventListener('load', function(){
@@ -895,7 +897,7 @@ footer {
         <option value="VOL">Voleibol</option>
       </select>
     </div>
-  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v56</div>
+  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v58</div>
   </div>
   </div><!-- fin panel negro -->
   
