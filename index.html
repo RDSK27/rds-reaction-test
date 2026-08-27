@@ -1271,7 +1271,7 @@ function saveRanking(r,list,mode,pulse){
 }
 function saveEntryToFirebase(r,entry,mode,pulse){
   var s=soundMode?'sound':'nosound';
-  var col='rank_'+r+'_'+(mode||'normal')+'_'+(pulse||'press')+'_'+s;
+  var col='scores_reaction_'+r+'_'+(mode||'normal')+'_'+(pulse||'press')+'_'+s;
   entry.ts=Date.now();
   if(window.fbReady){
     window.fbAddRank(col,entry);
@@ -2253,8 +2253,9 @@ function renderFullRanking(r,mode,pulse){
   if(!el) return;
   el.innerHTML='<div class="rank-full-empty">Cargando...</div>';
   var snd=(typeof activeRankSound!=='undefined'?activeRankSound:soundMode)?'sound':'nosound';
-  var col='rank_'+r+'_'+m+'_'+p+'_'+snd;
-  var legacyCol='rank_'+r+'_'+m+'_'+p; // colecciones antiguas, sin sufijo de sonido
+  var col='scores_reaction_'+r+'_'+m+'_'+p+'_'+snd;   // coleccion nueva (marcas a partir de v61)
+  var oldCol='rank_'+r+'_'+m+'_'+p+'_'+snd;            // marcas anteriores a v61
+  var oldLegacyCol='rank_'+r+'_'+m+'_'+p;              // marcas antiguas sin sufijo de sonido
   function ordenarYpintarRank(list){
     if(m==='limite'){
       list.sort(function(a,b){
@@ -2267,12 +2268,12 @@ function renderFullRanking(r,mode,pulse){
     renderRankList(list,el,m);
   }
   if(window.fbReady){
-    Promise.all([window.fbGetRank(col), window.fbGetRank(legacyCol)]).then(function(arrs){
-      if(arrs[0]===null){                        // lectura principal fallo -> localStorage (igual que antes)
+    Promise.all([window.fbGetRank(col), window.fbGetRank(oldCol), window.fbGetRank(oldLegacyCol)]).then(function(arrs){
+      if(arrs[0]===null){                        // lectura de la coleccion nueva fallo -> localStorage (igual que antes)
         renderRankList(getRanking(r,m,p),el,m); return;
       }
       var list=[];
-      [arrs[0], arrs[1]||[]].forEach(function(arr){ arr.forEach(function(doc){ list.push(doc); }); });
+      [arrs[0], arrs[1]||[], arrs[2]||[]].forEach(function(arr){ arr.forEach(function(doc){ list.push(doc); }); });
       ordenarYpintarRank(list);
     }).catch(function(){
       renderRankList(getRanking(r,m,p),el,m);
