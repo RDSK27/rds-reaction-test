@@ -1273,8 +1273,8 @@ function saveEntryToFirebase(r,entry,mode,pulse){
   var s=soundMode?'sound':'nosound';
   var col='rank_'+r+'_'+(mode||'normal')+'_'+(pulse||'press')+'_'+s;
   entry.ts=Date.now();
-  if(db){
-    db.collection(col).add(entry).catch(function(e){console.error('Firebase:',e);});
+  if(window.fbReady){
+    window.fbAddRank(col,entry);
   }
 }
 function addToRanking(r,name,avg,mode,completedRounds){
@@ -2266,12 +2266,13 @@ function renderFullRanking(r,mode,pulse){
     }
     renderRankList(list,el,m);
   }
-  if(db){
-    var pNew=db.collection(col).limit(100).get();
-    var pLeg=db.collection(legacyCol).limit(100).get().catch(function(){return null;});
-    Promise.all([pNew,pLeg]).then(function(snaps){
+  if(window.fbReady){
+    Promise.all([window.fbGetRank(col), window.fbGetRank(legacyCol)]).then(function(arrs){
+      if(arrs[0]===null){                        // lectura principal fallo -> localStorage (igual que antes)
+        renderRankList(getRanking(r,m,p),el,m); return;
+      }
       var list=[];
-      snaps.forEach(function(snap){ if(snap){ snap.forEach(function(doc){ list.push(doc.data()); }); } });
+      [arrs[0], arrs[1]||[]].forEach(function(arr){ arr.forEach(function(doc){ list.push(doc); }); });
       ordenarYpintarRank(list);
     }).catch(function(){
       renderRankList(getRanking(r,m,p),el,m);
@@ -2403,39 +2404,47 @@ addR2Listeners();
 
 
 </script>
-  <!-- Firebase — carga diferida para no bloquear la app -->
-  <script>
-    var db = null;
-    function initFirebase(){
+  <!-- Firebase (SDK modular 12.14.0, igual que el resto de la suite) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+    import { initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager,
+             collection, addDoc, getDocs, query, limit }
+      from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBbEgbWddPt_rhPM24bL_Nacp7TAlh1biM",
+      authDomain: "rds-reaction-test.firebaseapp.com",
+      projectId: "rds-reaction-test",
+      storageBucket: "rds-reaction-test.firebasestorage.app",
+      messagingSenderId: "490684952529",
+      appId: "1:490684952529:web:bb53a9813bd58ecdb3baf0"
+    };
+
+    let db = null;
+    try {
+      const app = initializeApp(firebaseConfig);
+      try { db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) }); }
+      catch(e){ db = getFirestore(app); }
+    } catch(e){ db = null; }
+    window.fbReady = !!db;
+
+    // Guardar una marca en una coleccion de ranking (dispara y olvida)
+    window.fbAddRank = async function(col, entry){
+      if(!db) return false;
+      try { await addDoc(collection(db, col), entry); return true; }
+      catch(e){ console.error('Firebase:', e); return false; }
+    };
+
+    // Leer hasta 100 docs de una coleccion de ranking.
+    // Devuelve array de objetos si OK, o null si la lectura falla (para caer a localStorage, igual que antes).
+    window.fbGetRank = async function(col){
+      if(!db) return null;
       try {
-        var firebaseConfig = {
-          apiKey: "AIzaSyBbEgbWddPt_rhPM24bL_Nacp7TAlh1biM",
-          authDomain: "rds-reaction-test.firebaseapp.com",
-          projectId: "rds-reaction-test",
-          storageBucket: "rds-reaction-test.firebasestorage.app",
-          messagingSenderId: "490684952529",
-          appId: "1:490684952529:web:bb53a9813bd58ecdb3baf0"
-        };
-        if(typeof firebase !== 'undefined'){
-          firebase.initializeApp(firebaseConfig);
-          db = firebase.firestore();
-        }
-      } catch(e) {}
-    }
-    function loadScript(src, cb){
-      var s=document.createElement('script');
-      s.src=src;
-      s.onload=cb;
-      s.onerror=function(){};
-      document.head.appendChild(s);
-    }
-    window.addEventListener('load', function(){
-      loadScript('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js', function(){
-        loadScript('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js', function(){
-          initFirebase();
-        });
-      });
-    });
+        const out = [];
+        (await getDocs(query(collection(db, col), limit(100)))).forEach(function(d){ out.push(d.data()); });
+        return out;
+      } catch(e){ return null; }
+    };
   </script>
 <div id="transition-overlay">
   <div id="transition-text">Ejercicio finalizado</div>
