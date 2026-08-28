@@ -40,7 +40,11 @@ html, body {
 body {
   color:#111;
   font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-  height:100%;   /* v70: antes 100vh/100dvh. dvh se calcula mal al reabrir la PWA en iOS (el "parche" gris). 100% (de html, de la ventana) es estable, como el resto de la suite. */
+  /* v71: body fijado a los 4 bordes de la pantalla. Ni 100vh/100dvh ni 100% -> iOS los
+     calcula mal al reabrir la PWA (el "parche" gris). position:fixed + inset:0 = viewport
+     real, estable. max-width + margin:auto centran la columna (con left/right:0). */
+  position:fixed;
+  top:0; right:0; bottom:0; left:0;
   width:100%;
   max-width:560px;
   margin:0 auto;
@@ -48,8 +52,7 @@ body {
   display:flex;
   flex-direction:column;
   align-items:stretch;
-  background:#c4c8cc;   /* v69: gris metalizado (igual que el fondo del home). Si iOS deja un hueco al reabrir la PWA, se ve gris y se funde, no una franja rara. Los laterales negros de la tablet salen de body::before. */
-  position:relative;
+  background:#c4c8cc;
 }
 
 /* Capa blanca fija que cubre todo el viewport incluido overscroll */
