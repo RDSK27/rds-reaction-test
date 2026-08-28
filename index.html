@@ -218,7 +218,8 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
   background:#111;
   border:1px solid #ddd;
   border-left:none; border-right:none;
-  height:240px;
+  flex:1 1 auto;
+  min-height:240px;
   width:100%;
   display:flex; flex-direction:column;
   align-items:center; justify-content:center;
@@ -239,14 +240,18 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
 
 #arena-r2-wrapper {
   width:100%;
-  display:block;
-  flex-shrink:0;
+  display:flex;
+  flex-direction:column;
+  flex:1 1 auto;
+  min-height:240px;
 }
 .r2-outer {
   display:none;
   flex-direction:column;
   width:100%;
   overflow:hidden;
+  flex:1 1 auto;
+  min-height:240px;
 }
 .r2-limit-bottom {
   width:100%;
@@ -255,13 +260,11 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
 }
 .r2-buttons {
   width:100%;
-  height:240px;
+  flex:1 1 auto;
   min-height:200px;
-  max-height:260px;
   display:flex;
   flex-direction:row;
   gap:10px;
-  flex-shrink:0;
   box-sizing:border-box;
   margin-bottom:0;
 }
@@ -1679,7 +1682,7 @@ function setupR2Zones(goMode){
     if(outer) outer.style.display='none';
     if(limFloat) limFloat.style.display='none';
     arena.style.display='flex';
-    document.getElementById('arena-r2-wrapper').style.display='block';
+    document.getElementById('arena-r2-wrapper').style.display='flex';
     return;
   }
 
@@ -1710,7 +1713,7 @@ function showR2Error(msg, sub){
   // Ocultar botones r2, mostrar arena con error
   var outer=document.getElementById('r2-outer');
   if(outer) outer.style.display='none';
-  document.getElementById('arena-r2-wrapper').style.display='block';
+  document.getElementById('arena-r2-wrapper').style.display='flex';
   arena.style.display='flex';
   arena.className='fail-early';
   arenaIcon.textContent='';
@@ -1962,7 +1965,7 @@ function showLimiteFail(){
 function showSaveFromLimiteFail(){
   document.getElementById('limite-fail-screen').style.display='none';
   arena.style.display='flex';
-  document.getElementById('arena-r2-wrapper').style.display='block';
+  document.getElementById('arena-r2-wrapper').style.display='flex';
   arena.style.pointerEvents='none';
   setTimeout(function(){ goToResults(); }, 800);
 }
@@ -2097,7 +2100,7 @@ function resetGameState(){
   var r2lv=document.getElementById('r2-limite-val');
   if(r2lv){r2lv.style.color='transparent';r2lv.textContent=' ';}
   arena.style.display='flex';
-  document.getElementById('arena-r2-wrapper').style.display='block';
+  document.getElementById('arena-r2-wrapper').style.display='flex';
   var limEl=document.getElementById('limite-display');
   if(limEl){limEl.style.visibility='hidden';limEl.textContent=' ';}
   var lfs=document.getElementById('limite-fail-screen');
