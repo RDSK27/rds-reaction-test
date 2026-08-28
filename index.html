@@ -779,8 +779,11 @@ footer {
   }
         navigator.serviceWorker.register('/rds-reaction-test/sw.js',{scope:'/rds-reaction-test/',updateViaCache:'none'})
           .then(function(reg){
+            reg.update();
+            if(reg.waiting && navigator.serviceWorker.controller){ reg.waiting.postMessage({action:'skipWaiting'}); }
             reg.addEventListener('updatefound', function(){
               var newSW=reg.installing;
+              if(!newSW) return;
               newSW.addEventListener('statechange', function(){
                 if(newSW.state==='installed'&&navigator.serviceWorker.controller){
                   newSW.postMessage({action:'skipWaiting'});
@@ -792,9 +795,9 @@ footer {
               if(document.visibilityState==='visible'){ reg.update(); }
             });
           });
-        var swReloaded=false;
+        var swReloaded=false, swHadController=!!navigator.serviceWorker.controller;
         navigator.serviceWorker.addEventListener('controllerchange',function(){
-          if(swReloaded) return;
+          if(!swHadController || swReloaded) return;
           swReloaded=true;
           window.location.reload();
         });
