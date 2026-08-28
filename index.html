@@ -49,7 +49,7 @@ body {
   display:flex;
   flex-direction:column;
   align-items:stretch;
-  background:#111;   /* v68: fondo del body en negro (la franja blanca de abajo era este). Cada pantalla pinta su propio fondo encima (home metalizado, resto blanco). */
+  background:#c4c8cc;   /* v69: gris metalizado (igual que el fondo del home). Si iOS deja un hueco al reabrir la PWA, se ve gris y se funde, no una franja rara. Los laterales negros de la tablet salen de body::before. */
   position:relative;
 }
 
@@ -592,10 +592,7 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
 }
 
 footer {
-  width:100%; text-align:center; padding:10px;
-  font-size:0.54rem; color:#ccc; letter-spacing:0.14em;
-  border-top:1px solid #e0e0e0; background:#fff;
-  margin-top:auto; text-transform:uppercase;
+  display:none;   /* v69: fuera. Era la "barra blanca" del fondo. Las otras apps de la suite no llevan footer. */
 }
 
 @media (max-width:560px) {
