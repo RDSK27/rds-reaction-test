@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="RDS React">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="light">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -13,7 +14,7 @@
 <style>
 /* === TEMA RDS — cambiar aqui para modificar colores globalmente === */
 :root {
-  --bg-page:       #ffffff;
+  --bg-page:       #000000;  /* marcos negros: html + body::before negros (laterales tablet + barra de estado iPhone) */
   --bg-card:       #ffffff;
   --bg-arena:      #111111;
   --bg-header:     #ffffff;
@@ -51,28 +52,41 @@ body {
   display:flex;
   flex-direction:column;
   align-items:stretch;
-  background:#ffffff;   /* v73: blanco como perception */
+  background:transparent;   /* marcos negros: transparente para que body::before/::after se vean */
 }
 
-/* Capa blanca fija que cubre todo el viewport incluido overscroll */
+/* Capa negra fija a pantalla completa = laterales negros en tablet (y respaldo del html negro) */
 body::before {
   content:'';
   position:fixed;
   inset:0;
-  background:var(--bg-page);   /* v73: capa blanca fija (como antes de v65). Los laterales negros se retoman para toda la suite a la vez. */
-  z-index:-1;
+  background:var(--bg-page);   /* --bg-page = #000000 */
+  z-index:-2;
 }
+/* Respaldo de la columna, de alto completo: blanco (o gris en el home) */
+body::after {
+  content:'';
+  position:fixed;
+  top:0; bottom:0; left:0; right:0;
+  margin:0 auto;
+  width:560px; max-width:100%;
+  background:#ffffff;
+  z-index:-1;
+  pointer-events:none;
+}
+body.home-active::after { background:#b0b4b8; }
 
 /* HEADER */
 header {
   width:100%;
   flex-shrink:0;
-  background:#111;
+  background:#000000;
   border-bottom:4px solid #b03020;
   display:flex;
   flex-direction:column;
   align-items:center;
-  padding:0;   /* v72: barra de estado 'black' (opaca) -> iOS reserva su sitio, no hace falta hueco */
+  padding:0;
+  padding-top:env(safe-area-inset-top,0px);
 }
 header img { width:100%; height:auto; display:block; margin-bottom:0; }
 .subtitle {
@@ -806,7 +820,7 @@ footer {
   </script>
 
 </head>
-<body>
+<body class="home-active">
 <div id="app-wrap">
 
 <header>
@@ -908,7 +922,7 @@ footer {
         <option value="VOL">Voleibol</option>
       </select>
     </div>
-  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v73</div>
+  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v75</div>
   </div>
   </div><!-- fin panel negro -->
   
@@ -1315,6 +1329,7 @@ function addToRanking(r,name,avg,mode,completedRounds){
 function showScreen(name){
   var ss=['home','game','results','ranking'];
   for(var i=0;i<ss.length;i++) document.getElementById('screen-'+ss[i]).className='screen'+(ss[i]===name?' active':'');
+  document.body.classList.toggle('home-active', name==='home');
 }
 
 function showTab(n){
