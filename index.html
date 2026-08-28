@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="RDS React">
 <meta name="theme-color" content="#ffffff">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -13,7 +13,7 @@
 <style>
 /* === TEMA RDS — cambiar aqui para modificar colores globalmente === */
 :root {
-  --bg-page:       #111111;   /* v67: fondo del html en negro (evita franja blanca al reabrir la PWA). La columna de la app sigue blanca via body{background:#fff} */
+  --bg-page:       #ffffff;
   --bg-card:       #ffffff;
   --bg-arena:      #111111;
   --bg-header:     #ffffff;
@@ -51,7 +51,7 @@ body {
   display:flex;
   flex-direction:column;
   align-items:stretch;
-  background:#111;
+  background:#ffffff;   /* v73: blanco como perception */
 }
 
 /* Capa blanca fija que cubre todo el viewport incluido overscroll */
@@ -59,7 +59,7 @@ body::before {
   content:'';
   position:fixed;
   inset:0;
-  background:#111;   /* PRUEBA v65: bordes laterales (tablet, vertical) en negro. Antes: var(--bg-page) */
+  background:var(--bg-page);   /* v73: capa blanca fija (como antes de v65). Los laterales negros se retoman para toda la suite a la vez. */
   z-index:-1;
 }
 
@@ -91,7 +91,7 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
 }
 
 /* APP WRAP: cadena flex para que la pantalla activa haga scroll */
-#app-wrap { height:100vh; height:100dvh; display:flex; flex-direction:column; width:100%; }   /* v72: como el .app de perception */
+#app-wrap { position:relative; max-width:560px; margin:0 auto; height:100vh; height:100dvh; display:flex; flex-direction:column; width:100%; background:#ffffff; }   /* v73: = .app de perception */
 
 /* SCREENS */
 .screen { display:none; width:100%; max-width:700px; margin-left:auto; margin-right:auto; padding:10px 14px 20px; flex-direction:column; gap:8px; }
@@ -905,7 +905,7 @@ footer {
         <option value="VOL">Voleibol</option>
       </select>
     </div>
-  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v66</div>
+  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v73</div>
   </div>
   </div><!-- fin panel negro -->
   
