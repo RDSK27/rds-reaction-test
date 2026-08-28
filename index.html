@@ -528,6 +528,19 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
   border-top:4px solid #b03020;
   margin-top:0;
 }
+/* Barra Inicio/Repetir a sangre: cancela el padding lateral de su pantalla
+   para que los botones lleguen a los bordes como en el resto de apps.
+   #screen-game tiene padding lateral de 10px; #screen-results/#screen-ranking de 14px. */
+.game-controls {
+  width:calc(100% + 20px);
+  margin-left:-10px;
+  margin-right:-10px;
+}
+.results-actions {
+  width:calc(100% + 28px);
+  margin-left:-14px;
+  margin-right:-14px;
+}
 .results-btn-main {
   width:38%; padding:13px;
   background:#111; color:#fff;
@@ -922,7 +935,7 @@ footer {
         <option value="VOL">Voleibol</option>
       </select>
     </div>
-  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v76</div>
+  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v77</div>
   </div>
   </div><!-- fin panel negro -->
   
