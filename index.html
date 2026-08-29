@@ -175,19 +175,20 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
 .selector-label {
   display:none;
 }
-.seg-group { display:flex; border:2px solid #000; border-radius:4px; overflow:hidden; }
+.seg-group { display:flex; border:0; border-top:4px solid #b03020; border-radius:0; overflow:hidden;
+  background:linear-gradient(rgba(0,0,0,0.20),rgba(0,0,0,0.28)),var(--carbon); background-size:cover; background-position:center; }
 .seg-btn {
   flex:1; padding:9px 3px;
   font-size:0.62rem; font-weight:900;
   letter-spacing:0.03em; text-transform:uppercase;
   text-align:center; cursor:pointer;
-  color:#555; background:#f0f0f0;
-  border:none; border-right:2px solid #000;
+  color:#fff; background:transparent;
+  border:none; border-right:3px solid #666;
   transition:background 0.15s,color 0.15s;
-  white-space:nowrap;
+  white-space:nowrap; text-shadow:0 1px 2px rgba(0,0,0,0.7);
 }
 .seg-btn:last-child { border-right:none; }
-.seg-btn.active { background:#b03020; color:#fff; }
+.seg-btn.active { background:#b03020; color:#fff; text-shadow:none; }
 #pulse-btn-press.active, #pulse-btn-press2.active, #pulse-btn-press2i.active, #pulse-btn-release.active, #pulse-btn-release2.active, #pulse-btn-release2i.active { background:#b03020; color:#fff; border-color:#b03020; }
 
 /* BUTTONS */
@@ -937,7 +938,7 @@ footer {
         <option value="VOL">Voleibol</option>
       </select>
     </div>
-  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v85</div>
+  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v86</div>
   </div>
   </div><!-- fin panel negro -->
   
