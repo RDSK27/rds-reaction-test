@@ -317,7 +317,7 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
 
 #arena-icon { font-size:2rem; line-height:1; }
 #limite-display {
-  display:block;
+  display:none;
   font-size:2.2rem;
   font-weight:900;
   color:#b03020;
@@ -935,7 +935,7 @@ footer {
         <option value="VOL">Voleibol</option>
       </select>
     </div>
-  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v77</div>
+  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v78</div>
   </div>
   </div><!-- fin panel negro -->
   
@@ -1204,25 +1204,33 @@ function getCurrentLimit(){
 
 function showLimiteInBest(){
   var lim=getCurrentLimit();
+  var bestCard=document.querySelector('.stat-card:nth-child(2)');
   var bestVal=document.getElementById('stat-best');
   var bestLabel=document.querySelector('.stat-card:nth-child(2) .stat-label');
+  var bestUnit=document.querySelector('.stat-card:nth-child(2) .stat-unit');
+  if(bestCard) bestCard.style.background='#b03020';
   if(bestVal){
     bestVal.textContent=lim;
     bestVal.style.animation='blink 0.8s step-start infinite';
-    bestVal.style.color='#b03020';
+    bestVal.style.color='#ffffff';
   }
-  if(bestLabel) bestLabel.textContent='Limite';
+  if(bestLabel){ bestLabel.textContent='Limite'; bestLabel.style.color='#ffffff'; }
+  if(bestUnit) bestUnit.style.color='#f3d4cf';
 }
 
 function restoreBest(){
+  var bestCard=document.querySelector('.stat-card:nth-child(2)');
   var bestVal=document.getElementById('stat-best');
   var bestLabel=document.querySelector('.stat-card:nth-child(2) .stat-label');
+  var bestUnit=document.querySelector('.stat-card:nth-child(2) .stat-unit');
+  if(bestCard) bestCard.style.background='';
   if(bestVal){
     bestVal.style.animation='';
     bestVal.style.color='#b03020';
     bestVal.textContent='--';
   }
-  if(bestLabel) bestLabel.textContent='Peor';
+  if(bestLabel){ bestLabel.textContent='Peor'; bestLabel.style.color=''; }
+  if(bestUnit) bestUnit.style.color='';
 }
 
 function setMode(m){
