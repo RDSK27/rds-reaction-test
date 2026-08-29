@@ -500,26 +500,26 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
   font-size:16px; font-family:inherit;
   color:#111; width:0;
 }
+.save-row-inner { display:flex; align-items:stretch; justify-content:center; gap:8px; width:calc(60% + 92px); max-width:calc(100% - 28px); margin:0 auto; }
 .results-save-btn {
-  flex:1; padding:12px 8px;
+  flex:1; max-width:60%; padding:7px;
   background:#b03020; color:#fff;
-  border:2px solid #b03020;
-  border-right:none;
-  border-radius:4px 0 0 4px;
-  font-size:0.76rem; font-weight:900;
-  letter-spacing:0.08em; cursor:pointer;
+  border:none; border-radius:4px;
+  font-size:0.65rem; font-weight:900;
+  letter-spacing:0.1em; cursor:pointer;
   text-transform:uppercase; text-align:center;
 }
+.results-save-btn:disabled { background:#9A9A9A; }
 .results-rank-btn {
-  flex:1; padding:12px 8px;
-  background:#fff; color:#b03020;
-  border:2px solid #b03020;
-  border-left:none;
-  border-radius:0 4px 4px 0;
-  font-size:0.76rem; font-weight:900;
-  letter-spacing:0.08em; cursor:pointer;
+  flex:none; width:84px; padding:7px;
+  background:#111; color:#fff;
+  border:none; border-radius:4px;
+  font-size:0.65rem; font-weight:900;
+  letter-spacing:0.1em; cursor:pointer;
   text-transform:uppercase; text-align:center;
 }
+.rank-full-row.rank-full-me.me-grey { background:#f0f0f0; box-shadow:inset 3px 0 0 #9A9A9A; }
+.rank-full-row.rank-full-me.me-grey .rank-full-name { color:#555; }
 .results-actions {
   display:flex; flex-direction:row; gap:0;
   width:100%; z-index:10;
@@ -936,7 +936,7 @@ footer {
         <option value="VOL">Voleibol</option>
       </select>
     </div>
-  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v80</div>
+  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v81</div>
   </div>
   </div><!-- fin panel negro -->
   
@@ -1031,9 +1031,9 @@ footer {
   </div>
   </div><!-- fin screen-scroll -->
   <div style="margin-top:16px;">
-    <div style="display:flex;width:calc(100% - 28px);margin:0 14px;gap:0;">
+    <div class="save-row-inner">
       <button class="results-save-btn" onclick="saveFromResults()">Guardar</button>
-      <button class="results-rank-btn" onclick="goToFullRanking()">&#127942; Ranking</button>
+      <button class="results-rank-btn" onclick="goToFullRanking()">Ranking</button>
     </div>
     <div style="height:16px;"></div>
     <div class="results-actions">
@@ -1073,7 +1073,10 @@ footer {
   </div>
   <div class="rank-full-list" id="rank-full-list"></div>
     <div style="display:flex; justify-content:center; padding:8px 16px 12px;">
-    <button id="btn-hide-repeated" style="width:60%; padding:7px; font-size:0.65rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; background:#111; color:#fff; border:none; cursor:pointer; border-radius:4px;" onclick="toggleHideRepeated()">Mostrar repetidos</button>
+      <div class="save-row-inner">
+        <button id="btn-hide-repeated" style="flex:1; max-width:60%; padding:7px; font-size:0.65rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; background:#111; color:#fff; border:none; cursor:pointer; border-radius:4px;" onclick="toggleHideRepeated()">Mostrar repetidos</button>
+        <button id="btnGuardarRank" style="display:none; flex:none; width:84px; align-items:center; justify-content:center; padding:7px; font-size:0.65rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; background:#b03020; color:#fff; border:none; cursor:pointer; border-radius:4px;" aria-label="Guardar mi marca" title="Guardar mi marca">Guardar</button>
+      </div>
   </div>
   <div class="results-actions">
     <button class="game-ctrl-btn" onclick="goHome()">&#8592; Inicio</button>
@@ -1087,6 +1090,7 @@ footer {
 <script>
 // Nombre de usuario persistente
 var savedUserName = localStorage.getItem('rds_username') || '';
+var rxSaved, rxLast = null;
 
 function speakMsg(text){
   if(!window.speechSynthesis) return;
@@ -2025,10 +2029,16 @@ function saveFromResults(){
   var completedR=gameMode==='limite'?limiteRoundsCompleted:totalRounds;
   addToRanking(totalRounds,name,currentAvg,gameMode,completedR);
   activeRankingTab=totalRounds;
+  rxSaved=true;
 }
 function goToResults(){
   var saveBtn=document.getElementById('results-save-btn')||document.querySelector('.results-save-btn');
   if(saveBtn){ saveBtn.style.opacity=''; saveBtn.style.background=''; saveBtn.style.borderColor=''; saveBtn.style.cursor=''; saveBtn.disabled=false; saveBtn.textContent='Guardar'; }
+  rxSaved=false;
+  rxLast={ rounds:totalRounds, name:(savedUserName||savedName||'').trim().toUpperCase(),
+           avg:currentAvg, mode:gameMode||'normal', pulse:pulseMode||'press',
+           completedR:(gameMode==='limite'?limiteRoundsCompleted:totalRounds),
+           date:new Date().toLocaleDateString('es-ES') };
   var arena=document.getElementById('arena');
   if(arena) arena.style.pointerEvents='';
 
@@ -2247,8 +2257,17 @@ function getHomeName(){
   if(!ini) return '';
   return ini+'-'+(sptEl.value||'').trim().toUpperCase();
 }
-function renderRankList(list, el, m){
+function renderRankList(list, el, m, latest){
   list=filterRepeated(list);
+  function rankBetter(a,b){
+    if(a==null) return false; if(b==null) return true;
+    var av=(a.avg==null?9999:a.avg), bv=(b.avg==null?9999:b.avg);
+    if(m==='limite'){
+      var ac=(a.completed||0), bc=(b.completed||0);
+      return ac>bc || (ac===bc && av<bv);
+    }
+    return av<bv;
+  }
   var medals=['gold','silver','bronze'];
   var meName=getHomeName();
   // Posicion del usuario en la lista filtrada completa (antes de recortar a 15)
@@ -2264,8 +2283,8 @@ function renderRankList(list, el, m){
     var d=document.createElement('div');d.className='rank-full-empty';
     d.textContent='Sin resultados';el.appendChild(d);return;
   }
-  function buildRow(entry, posLabel, medalIdx, isMe){
-    var row=document.createElement('div');row.className='rank-full-row'+(isMe?' rank-full-me':'');
+  function buildRow(entry, posLabel, medalIdx, isMe, grey){
+    var row=document.createElement('div');row.className='rank-full-row'+(isMe?' rank-full-me':'')+(isMe&&grey?' me-grey':'');
     var pos=document.createElement('div');
     pos.className='rank-full-pos'+(medalIdx>=0 && medalIdx<3?' '+medals[medalIdx]:'');
     pos.textContent=posLabel;
@@ -2290,6 +2309,18 @@ function renderRankList(list, el, m){
     var posLabel=(myIdx+1>=100)?'100+':String(myIdx+1);
     el.appendChild(buildRow(myEntry, posLabel, -1, true));
   }
+  if(latest){
+    var keyOf=function(e){ return (e&&e.name||'')+'|'+(e&&e.avg)+'|'+(m==='limite'?(e&&e.completed||''):''); };
+    var lk=keyOf(latest), shown=false;
+    for(var s2=0;s2<display.length;s2++){ if(keyOf(display[s2])===lk){ shown=true; break; } }
+    var bestExtra=(myEntry && myIdx>=15 && keyOf(myEntry)===lk);
+    if(!shown && !bestExtra){
+      var lpos=1;
+      for(var q=0;q<list.length;q++){ if(rankBetter(list[q], latest)) lpos++; }
+      var greyLatest=!!(myEntry && myIdx<15 && rankBetter(myEntry, latest));
+      el.appendChild(buildRow(latest, (lpos>=100?'100+':String(lpos)), -1, true, greyLatest));
+    }
+  }
 }
 
 function renderFullRanking(r,mode,pulse){
@@ -2298,6 +2329,12 @@ function renderFullRanking(r,mode,pulse){
   var el=document.getElementById('rank-full-list');
   if(!el) return;
   el.innerHTML='<div class="rank-full-empty">Cargando...</div>';
+  var latest=null;
+  if(rxLast && rxLast.rounds===r && rxLast.mode===m && (rxLast.pulse||'press')===p && rxLast.name){
+    latest={ name:rxLast.name, avg:rxLast.avg, date:rxLast.date, mode:m };
+    if(m==='limite') latest.completed=rxLast.completedR;
+  }
+  rxUpdateRankSaveBtn();
   var snd=(typeof activeRankSound!=='undefined'?activeRankSound:soundMode)?'sound':'nosound';
   var col='scores_reaction_'+r+'_'+m+'_'+p+'_'+snd;   // coleccion nueva (marcas a partir de v61)
   var oldCol='rank_'+r+'_'+m+'_'+p+'_'+snd;            // marcas anteriores a v61
@@ -2311,21 +2348,21 @@ function renderFullRanking(r,mode,pulse){
     } else {
       list.sort(function(a,b){ return (a.avg||9999)-(b.avg||9999); });
     }
-    renderRankList(list,el,m);
+    renderRankList(list,el,m,latest);
   }
   if(window.fbReady){
     Promise.all([window.fbGetRank(col), window.fbGetRank(oldCol), window.fbGetRank(oldLegacyCol)]).then(function(arrs){
       if(arrs[0]===null){                        // lectura de la coleccion nueva fallo -> localStorage (igual que antes)
-        renderRankList(getRanking(r,m,p),el,m); return;
+        renderRankList(getRanking(r,m,p),el,m,latest); return;
       }
       var list=[];
       [arrs[0], arrs[1]||[], arrs[2]||[]].forEach(function(arr){ arr.forEach(function(doc){ list.push(doc); }); });
       ordenarYpintarRank(list);
     }).catch(function(){
-      renderRankList(getRanking(r,m,p),el,m);
+      renderRankList(getRanking(r,m,p),el,m,latest);
     });
   } else {
-    renderRankList(getRanking(r,m,p),el,m);
+    renderRankList(getRanking(r,m,p),el,m,latest);
   }
 }
 function goToFullRanking(){
@@ -2449,6 +2486,40 @@ function addR2Listeners(){
 }
 addR2Listeners();
 
+function rxUpdateRankSaveBtn(){
+  var g=document.getElementById('btnGuardarRank'); if(!g) return;
+  if(rxSaved===false){
+    g.style.display='flex'; g.disabled=false;
+    g.style.background='#b03020'; g.style.cursor='pointer';
+    g.setAttribute('aria-label','Guardar mi marca'); g.setAttribute('title','Guardar mi marca');
+    g.textContent='Guardar';
+  } else if(rxSaved===true){
+    g.style.display='flex'; g.disabled=true;
+    g.style.background='#9A9A9A'; g.style.cursor='default';
+    g.setAttribute('aria-label','Marca guardada'); g.setAttribute('title','Marca guardada');
+    g.textContent='Guardado';
+  } else {
+    g.style.display='none';
+  }
+}
+(function(){
+  var g=document.getElementById('btnGuardarRank');
+  if(g) g.addEventListener('click', function(){
+    if(rxSaved!==false || !rxLast || !rxLast.name) return;
+    addToRanking(rxLast.rounds, rxLast.name, rxLast.avg, rxLast.mode, rxLast.completedR);
+    rxSaved=true;
+    this.disabled=true; this.style.background='#9A9A9A'; this.style.cursor='default';
+    this.setAttribute('aria-label','Marca guardada'); this.setAttribute('title','Marca guardada');
+    this.textContent='Guardado';
+    var sb=document.getElementById('results-save-btn')||document.querySelector('.results-save-btn');
+    if(sb){ sb.disabled=true; sb.style.background='#888'; sb.style.borderColor='#888'; sb.style.cursor='default'; sb.textContent='Guardado'; }
+    renderFullRanking(activeRankTab, activeRankMode, activeRankPulse);
+  });
+  var iniEl=document.getElementById('user-ini-input');
+  var sptEl=document.getElementById('user-sport-select');
+  if(iniEl) iniEl.addEventListener('input', function(){ try{ saveUserName(); }catch(e){} });
+  if(sptEl) sptEl.addEventListener('change', function(){ try{ saveUserName(); }catch(e){} });
+})();
 
 </script>
   <!-- Firebase (SDK modular 12.14.0, igual que el resto de la suite) -->
