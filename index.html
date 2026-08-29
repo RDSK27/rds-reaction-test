@@ -568,6 +568,14 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
 }
 .btn-ranking:active{transform:translateY(3px);}
 
+.home-btn-row{ display:flex; align-items:center; justify-content:center; gap:16px; }
+.home-btn-row #btn-start-wrap{ margin:0; }
+.start-wrap{ display:flex; width:fit-content; align-items:center; justify-content:center; padding:4px; border-radius:50%; background:conic-gradient(#ffffff,#9a9a9a,#e8e8e8,#5a5a5a,#ffffff,#8a8a8a,#dcdcdc,#666666,#ffffff); box-shadow:0 5px 12px rgba(0,0,0,0.6); transition:transform 0.08s, box-shadow 0.08s; }
+.start-wrap:active{ transform:translateY(3px); box-shadow:0 2px 6px rgba(0,0,0,0.6); }
+.start-btn{ width:70px; height:70px; border-radius:50%; border:none; cursor:pointer; box-shadow:inset 0 2px 4px rgba(255,255,255,0.28), inset 0 -3px 6px rgba(0,0,0,0.5); }
+.start-btn.rank-btn{ background:radial-gradient(circle at 35% 30%, #ffffff 0%, #ececec 45%, #c6c6c6 100%); display:flex; align-items:center; justify-content:center; padding:0; }
+.start-btn.rank-btn svg{ display:block; }
+
 /* FULL RANKING SCREEN */
 .rank-screen-title { color:#111;
   font-size:1.2rem; font-weight:900;
@@ -895,10 +903,14 @@ footer {
   </div>
 
   <div style="border:3px solid #b03020;border-radius:10px;background-color:#000000;padding:10px 12px 16px;display:flex;flex-direction:column;align-items:center;gap:8px;width:92%;box-sizing:border-box;margin-bottom:10px;margin-top:auto;">
+  <div class="home-btn-row">
   <div id="btn-start-wrap">
   <button id="btn-start" ontouchend="event.stopPropagation();" onclick="playClick();prepareAndCountdown()">START</button>
 </div>
-  <button class="btn-ranking" onclick="showFullRanking()">&#127942; Ranking</button>
+  <div class="start-wrap">
+  <button class="start-btn rank-btn" onclick="showFullRanking()" aria-label="Ranking"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#333333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 13.5v7.5M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 4H4v2a3 3 0 0 0 3 3M17 4h3v2a3 3 0 0 1-3 3"/></svg></button>
+</div>
+  </div>
   <div id="user-name-bar">
     <div style="display:flex;width:200px;gap:0;margin:0 auto;">
       <input id="user-ini-input" type="text" maxlength="3" placeholder="INI"
@@ -937,7 +949,7 @@ footer {
         <option value="VOL">Voleibol</option>
       </select>
     </div>
-  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v90</div>
+  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v91</div>
   </div>
   </div><!-- fin panel negro -->
   
