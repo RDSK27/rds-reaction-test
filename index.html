@@ -627,6 +627,9 @@ footer {
 }
 #limite-fail-screen {
   display:none;
+  flex:1 1 auto;
+  min-height:240px;
+  box-sizing:border-box;
   flex-direction:column;
   align-items:center;
   justify-content:center;
@@ -933,7 +936,7 @@ footer {
         <option value="VOL">Voleibol</option>
       </select>
     </div>
-  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v79</div>
+  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v80</div>
   </div>
   </div><!-- fin panel negro -->
   
@@ -993,8 +996,6 @@ footer {
     <div class="lf-limit" id="lf-limit-val">340 ms</div>
     <div class="lf-sub" id="lf-result-val">Ensayo 1 — 450 ms</div>
     <div class="lf-actions">
-      <button class="lf-btn-main lf-btn-dark" onclick="goHome()">Inicio</button>
-      <button class="lf-btn-main lf-btn-dark" onclick="resetGame()">↺ Repetir</button>
       <button class="lf-btn-main lf-btn-red" onclick="showSaveFromLimiteFail()">Guardar</button>
     </div>
   </div>
