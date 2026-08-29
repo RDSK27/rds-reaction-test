@@ -189,6 +189,8 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
 }
 .seg-btn:last-child { border-right:none; }
 .seg-btn.active { background:#b03020; color:#fff; text-shadow:none; }
+.seg-sound { width:min(88vw,500px); margin-left:auto; margin-right:auto; }
+.seg-pulse { width:min(72vw,400px); margin-left:auto; margin-right:auto; }
 #pulse-btn-press.active, #pulse-btn-press2.active, #pulse-btn-press2i.active, #pulse-btn-release.active, #pulse-btn-release2.active, #pulse-btn-release2i.active { background:#b03020; color:#fff; border-color:#b03020; }
 
 /* BUTTONS */
@@ -875,7 +877,7 @@ footer {
   <div class="action-row">
     <div class="selector-wrap">
     <div class="selector-label">Sonido</div>
-    <div class="seg-group">
+    <div class="seg-group seg-sound">
       <button class="seg-btn active" id="sound-btn-on" onclick="setSoundMode(true)">&#128276; Con sonido</button>
       <button class="seg-btn" id="sound-btn-off" onclick="setSoundMode(false)">&#128277; Sin sonido</button>
     </div>
@@ -883,12 +885,12 @@ footer {
 
   <div class="selector-wrap">
     <div class="selector-label">Opcion de pulsado</div>
-    <div class="seg-group">
+    <div class="seg-group seg-pulse">
       <button class="seg-btn active" id="pulse-btn-press" onclick="setPulseMode('press')">Bajar</button>
       <button class="seg-btn" id="pulse-btn-press2" onclick="setPulseMode('press2')">Bajar 2</button>
       <button class="seg-btn" id="pulse-btn-press2i" onclick="setPulseMode('press2i')">Bajar 2*</button>
     </div>
-    <div class="seg-group" style="margin-top:6px;">
+    <div class="seg-group seg-pulse" style="margin-top:6px;">
       <button class="seg-btn" id="pulse-btn-release" onclick="setPulseMode('release')">Subir</button>
       <button class="seg-btn" id="pulse-btn-release2" onclick="setPulseMode('release2')">Subir 2</button>
       <button class="seg-btn" id="pulse-btn-release2i" onclick="setPulseMode('release2i')">Subir 2*</button>
@@ -938,7 +940,7 @@ footer {
         <option value="VOL">Voleibol</option>
       </select>
     </div>
-  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v86</div>
+  <div style="color:#ff6a4d;font-size:0.95rem;font-weight:700;letter-spacing:0.12em;text-align:center;padding-top:4px;font-family:Arial,sans-serif;">v87</div>
   </div>
   </div><!-- fin panel negro -->
   
