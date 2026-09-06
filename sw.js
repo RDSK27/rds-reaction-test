@@ -1,4 +1,4 @@
-var CACHE = 'rds-reaction-v92';
+var CACHE = 'rds-reaction-v93';
 
 var PRECACHE = [
   '/rds-reaction-test/',
@@ -53,7 +53,7 @@ self.addEventListener('fetch', function(e){
   // Network-first para la navegacion (el HTML): siempre intenta traer la version nueva.
   if(e.request.mode === 'navigate'){
     e.respondWith(
-      fetch(e.request).then(function(res){
+      fetch(e.request, {cache:'no-store'}).then(function(res){
         if(res && res.status === 200){
           var clone = res.clone();
           caches.open(CACHE).then(function(c){ c.put(e.request, clone); });
