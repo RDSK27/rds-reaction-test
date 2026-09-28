@@ -571,6 +571,7 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
 .home-btn-row{ display:flex; align-items:center; justify-content:center; gap:16px; margin-top:15px; }
 .home-btn-row #btn-start-wrap{ margin:0; }
 .app-ver{ margin-top:auto; text-align:center; color:#9a9a9a; font-size:0.72rem; letter-spacing:0.12em; font-family:Arial,sans-serif; padding-top:6px; }
+.pending-sync{ display:none; margin-top:4px; text-align:center; color:#e0a030; font-size:0.68rem; letter-spacing:0.03em; font-family:Arial,sans-serif; }
 .start-wrap{ display:flex; width:fit-content; align-items:center; justify-content:center; padding:4px; border-radius:50%; background:conic-gradient(#ffffff,#9a9a9a,#e8e8e8,#5a5a5a,#ffffff,#8a8a8a,#dcdcdc,#666666,#ffffff); box-shadow:0 5px 12px rgba(0,0,0,0.6); transition:transform 0.08s, box-shadow 0.08s; }
 .start-wrap:active{ transform:translateY(3px); box-shadow:0 2px 6px rgba(0,0,0,0.6); }
 .start-btn{ width:70px; height:70px; border-radius:50%; border:none; cursor:pointer; box-shadow:inset 0 2px 4px rgba(255,255,255,0.28), inset 0 -3px 6px rgba(0,0,0,0.5); }
@@ -952,7 +953,8 @@ footer {
       </select>
     </div>
   </div>
-  <div class="app-ver">v95</div>
+  <div class="app-ver">v96</div>
+  <div id="pending-sync" class="pending-sync"></div>
   </div><!-- fin panel negro -->
   
   </div>
@@ -2593,11 +2595,54 @@ function rxUpdateRankSaveBtn(){
     } catch(e){ db = null; }
     window.fbReady = !!db;
 
+    /* Cola de reintento offline (2026-09-28, propia, en localStorage):
+       ya no hay persistencia de Firestore (ver nota arriba), asi que si
+       fbAddRank falla o no hay red, la marca se guarda aqui (con su
+       coleccion, que varia por combinacion) y se reintenta sola al
+       recuperar conexion (evento 'online' + al volver a primer plano).
+       No usa IndexedDB ni el motor offline de Firestore -> no puede
+       reproducir el candado entre pestanas del Paso H. */
+    var PENDING_KEY = 'rds_rank_pending';
+    function loadPending(){ try{ return JSON.parse(localStorage.getItem(PENDING_KEY)||'[]'); }catch(e){ return []; } }
+    function savePending(arr){ try{ localStorage.setItem(PENDING_KEY, JSON.stringify(arr)); }catch(e){} }
+    function updatePendingUI(){
+      var n=loadPending().length, el=document.getElementById('pending-sync');
+      if(!el) return;
+      if(n>0){ el.style.display='block'; el.textContent='⚠ '+n+(n===1?' marca pendiente de subir':' marcas pendientes de subir'); }
+      else{ el.style.display='none'; el.textContent=''; }
+    }
+    function withTimeout(p,ms){
+      return new Promise(function(resolve,reject){
+        var done=false, t=setTimeout(function(){ if(!done){ done=true; reject(new Error('timeout')); } }, ms);
+        p.then(function(v){ if(!done){ done=true; clearTimeout(t); resolve(v); } }, function(e){ if(!done){ done=true; clearTimeout(t); reject(e); } });
+      });
+    }
+    var flushing=false;
+    async function flushPending(){
+      if(!db || flushing || !navigator.onLine) return;
+      var pend=loadPending();
+      if(!pend.length) return;
+      flushing=true;
+      var rest=[];
+      for(var i=0;i<pend.length;i++){
+        try{ await withTimeout(addDoc(collection(db, pend[i].col), pend[i].entry), 8000); }
+        catch(e){ rest.push(pend[i]); }
+      }
+      savePending(rest);
+      updatePendingUI();
+      flushing=false;
+    }
+    window.addEventListener('online', flushPending);
+    document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='visible'){ flushPending(); } });
+    updatePendingUI();
+    flushPending();
+
     // Guardar una marca en una coleccion de ranking (dispara y olvida)
     window.fbAddRank = async function(col, entry){
       if(!db) return false;
-      try { await addDoc(collection(db, col), entry); return true; }
-      catch(e){ console.error('Firebase:', e); return false; }
+      if(!navigator.onLine){ var p1=loadPending(); p1.push({col:col,entry:entry}); savePending(p1); updatePendingUI(); return false; }
+      try { await withTimeout(addDoc(collection(db, col), entry), 8000); return true; }
+      catch(e){ var p2=loadPending(); p2.push({col:col,entry:entry}); savePending(p2); updatePendingUI(); return false; }
     };
 
     // Leer hasta 100 docs de una coleccion de ranking.
