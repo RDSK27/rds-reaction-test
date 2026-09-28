@@ -953,7 +953,7 @@ footer {
       </select>
     </div>
   </div>
-  <div class="app-ver">v96</div>
+  <div class="app-ver">v97</div>
   <div id="pending-sync" class="pending-sync"></div>
   </div><!-- fin panel negro -->
   
@@ -2368,15 +2368,21 @@ function renderFullRanking(r,mode,pulse){
     renderRankList(list,el,m,latest);
   }
   if(window.fbReady){
+    var rcKey='rds_rank_cache_'+col;
+    var cached=null;
+    try{ cached=JSON.parse(localStorage.getItem(rcKey)||'null'); }catch(e){ cached=null; }
+    if(cached && cached.length){ ordenarYpintarRank(cached.slice()); }
     Promise.all([window.fbGetRank(col), window.fbGetRank(oldCol), window.fbGetRank(oldLegacyCol)]).then(function(arrs){
-      if(arrs[0]===null){                        // lectura de la coleccion nueva fallo -> localStorage (igual que antes)
-        renderRankList(getRanking(r,m,p),el,m,latest); return;
+      if(arrs[0]===null){                        // lectura de la coleccion nueva fallo -> cache o localStorage
+        if(!cached || !cached.length){ renderRankList(getRanking(r,m,p),el,m,latest); }
+        return;
       }
       var list=[];
       [arrs[0], arrs[1]||[], arrs[2]||[]].forEach(function(arr){ arr.forEach(function(doc){ list.push(doc); }); });
+      try{ localStorage.setItem(rcKey, JSON.stringify(list)); }catch(e){}
       ordenarYpintarRank(list);
     }).catch(function(){
-      renderRankList(getRanking(r,m,p),el,m,latest);
+      if(!cached || !cached.length){ renderRankList(getRanking(r,m,p),el,m,latest); }
     });
   } else {
     renderRankList(getRanking(r,m,p),el,m,latest);
