@@ -1,4 +1,4 @@
-var CACHE = 'rds-reaction-v101';
+var CACHE = 'rds-reaction-v102';
 
 var PRECACHE = [
   '/rds-reaction-test/',
@@ -53,18 +53,22 @@ self.addEventListener('fetch', function(e){
   }
 
   // Network-first para la navegacion (el HTML): siempre intenta traer la version nueva.
+  // OJO (2026-09-29): se guarda/busca con la clave fija del index.html,
+  // NUNCA con e.request tal cual -- si se usara el request, la URL con
+  // ?ini=&dep= que anade SuiteRDS al entrar desde ahi (o su ausencia en
+  // otras visitas) generaria una clave distinta cada vez, y
+  // caches.match(e.request) casi nunca encontraria la copia guardada --
+  // rompia el offline justo al entrar desde SuiteRDS.
   if(e.request.mode === 'navigate'){
     e.respondWith(
       fetch(e.request, {cache:'no-store'}).then(function(res){
         if(res && res.status === 200){
           var clone = res.clone();
-          caches.open(CACHE).then(function(c){ c.put(e.request, clone); });
+          caches.open(CACHE).then(function(c){ c.put('/rds-reaction-test/index.html', clone); });
         }
         return res;
       }).catch(function(){
-        return caches.match(e.request).then(function(cached){
-          return cached || caches.match('/rds-reaction-test/index.html');
-        });
+        return caches.match('/rds-reaction-test/index.html');
       })
     );
     return;
