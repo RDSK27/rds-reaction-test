@@ -1,4 +1,4 @@
-var CACHE = 'rds-reaction-v99';
+var CACHE = 'rds-reaction-v100';
 
 var PRECACHE = [
   '/rds-reaction-test/',
@@ -35,8 +35,10 @@ self.addEventListener('message', function(e){
 self.addEventListener('activate', function(e){
   e.waitUntil(
     caches.keys().then(function(keys){
+      /* borra cache vieja de ESTA app (deja intactas las de otras apps RDS,
+         que comparten origen -- caches.keys() ve TODAS las del origen). */
       return Promise.all(
-        keys.filter(function(k){ return k !== CACHE; })
+        keys.filter(function(k){ return k.indexOf('rds-reaction-')===0 && k !== CACHE; })
             .map(function(k){ return caches.delete(k); })
       );
     })
