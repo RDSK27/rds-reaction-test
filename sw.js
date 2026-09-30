@@ -1,35 +1,25 @@
-var CACHE = 'rds-reaction-v103';
-
-var PRECACHE = [
-  '/rds-reaction-test/',
-  '/rds-reaction-test/index.html',
-  '/rds-reaction-test/manifest.json',
-  '/rds-reaction-test/icon-192.png',
-  '/rds-reaction-test/icon-512.png',
-  '/rds-reaction-test/apple-touch-icon.png'
-];
-
-var NO_CACHE = [
-  'firestore.googleapis.com',
-  'firebase.googleapis.com',
-  'gstatic.com'
+/* RDS Velocidad de Reaccion - Service Worker */
+var CACHE = 'rds-reaction-v104';
+var ASSETS = [
+  './',
+  './index.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
+  './apple-touch-icon.png'
 ];
 
 self.addEventListener('install', function(e){
   e.waitUntil(
-    caches.open(CACHE).then(function(c){
-      return Promise.allSettled(
-        PRECACHE.map(function(url){
-          return c.add(url).catch(function(){});
-        })
-      );
+    caches.open(CACHE).then(function(cache){
+      // {cache:'reload'} evita que el precache use copias viejas del HTTP cache
+      return cache.addAll(ASSETS.map(function(u){ return new Request(u, {cache:'reload'}); }));
     })
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('message', function(e){
-  if(e.data && e.data.action === 'skipWaiting') self.skipWaiting();
+  if(e.data && e.data.action === 'skipWaiting'){ self.skipWaiting(); }
 });
 
 self.addEventListener('activate', function(e){
@@ -37,55 +27,47 @@ self.addEventListener('activate', function(e){
     caches.keys().then(function(keys){
       /* borra cache vieja de ESTA app (deja intactas las de otras apps RDS,
          que comparten origen -- caches.keys() ve TODAS las del origen). */
-      return Promise.all(
-        keys.filter(function(k){ return k.indexOf('rds-reaction-')===0 && k !== CACHE; })
-            .map(function(k){ return caches.delete(k); })
-      );
-    })
+      return Promise.all(keys.map(function(k){ if(k.indexOf('rds-reaction-')===0 && k!==CACHE){ return caches.delete(k); } }));
+    }).then(function(){ return self.clients.claim(); })
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', function(e){
-  var url = e.request.url;
-  for(var i=0; i<NO_CACHE.length; i++){
-    if(url.indexOf(NO_CACHE[i]) > -1) return;
-  }
+  var req = e.request;
+  if(req.method !== 'GET'){ return; }
+  var url = new URL(req.url);
+  var sameOrigin = (url.origin === self.location.origin);
 
-  // Network-first para la navegacion (el HTML): siempre intenta traer la version nueva.
-  // OJO (2026-09-29): se guarda/busca con la clave fija del index.html,
-  // NUNCA con e.request tal cual -- si se usara el request, la URL con
-  // ?ini=&dep= que anade SuiteRDS al entrar desde ahi (o su ausencia en
-  // otras visitas) generaria una clave distinta cada vez, y
-  // caches.match(e.request) casi nunca encontraria la copia guardada --
-  // rompia el offline justo al entrar desde SuiteRDS.
-  if(e.request.mode === 'navigate'){
+  // NAVEGACION (HTML): network-first -> siempre la ultima version si hay red,
+  // con la cache como respaldo offline.
+  if(req.mode === 'navigate'){
     e.respondWith(
-      fetch(e.request, {cache:'no-store'}).then(function(res){
-        if(res && res.status === 200){
-          var clone = res.clone();
-          caches.open(CACHE).then(function(c){ c.put('/rds-reaction-test/index.html', clone); });
-        }
-        return res;
+      fetch(req, {cache:'no-store'}).then(function(resp){
+        var copy = resp.clone();
+        caches.open(CACHE).then(function(cache){ try{ cache.put('./index.html', copy); }catch(err){} });
+        return resp;
       }).catch(function(){
-        return caches.match('/rds-reaction-test/index.html');
+        return caches.match(req).then(function(cached){ return cached || caches.match('./index.html'); });
       })
     );
     return;
   }
 
-  // Cache-first para el resto de recursos estaticos.
+  var isFbSdk = (url.hostname === 'www.gstatic.com' && url.pathname.indexOf('/firebasejs/') !== -1);
+  // El resto de origenes (p. ej. firestore.googleapis.com) van directos a la red:
+  // asi Firestore gestiona su propia persistencia offline.
+  if(!sameOrigin && !isFbSdk){ return; }
+
+  // ASSETS estaticos: cache-first.
   e.respondWith(
-    caches.match(e.request).then(function(cached){
-      if(cached) return cached;
-      return fetch(e.request).then(function(res){
-        if(res && res.status === 200){
-          var clone = res.clone();
-          caches.open(CACHE).then(function(c){ c.put(e.request, clone); });
-        }
-        return res;
+    caches.match(req).then(function(cached){
+      if(cached){ return cached; }
+      return fetch(req).then(function(resp){
+        var copy = resp.clone();
+        caches.open(CACHE).then(function(cache){ try{ cache.put(req, copy); }catch(err){} });
+        return resp;
       }).catch(function(){
-        return caches.match('/rds-reaction-test/index.html');
+        if(req.mode === 'navigate'){ return caches.match('./index.html'); }
       });
     })
   );
