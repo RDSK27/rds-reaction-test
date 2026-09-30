@@ -953,7 +953,7 @@ footer {
       </select>
     </div>
   </div>
-  <div class="app-ver">v104</div>
+  <div class="app-ver">v105</div>
   <div id="pending-sync" class="pending-sync"></div>
   </div><!-- fin panel negro -->
   
@@ -1367,7 +1367,7 @@ function addToRanking(r,name,avg,mode,completedRounds){
   saveEntryToFirebase(r,fbEntry,mode,pulse);
 }
 
-function showScreen(name){
+function showScreen(name){ if(name!=='ranking' && typeof stopRankWatch==='function') stopRankWatch();
   var ss=['home','game','results','ranking'];
   for(var i=0;i<ss.length;i++) document.getElementById('screen-'+ss[i]).className='screen'+(ss[i]===name?' active':'');
   document.body.classList.toggle('home-active', name==='home');
@@ -1455,7 +1455,7 @@ function startCountdown(cb){
   },500);
 }
 
-function startGame(){
+function startGame(){ try{ warmRank(totalRounds,gameMode,pulseMode,soundMode?'sound':'nosound'); }catch(e){}
   saveUserName();
   fingerDown=false;
   releaseReady=false;
@@ -2340,11 +2340,55 @@ function renderRankList(list, el, m, latest){
   }
 }
 
+/* Ranking (2026-09-30): lo que se ve es SIEMPRE la union de (a) el ranking
+   global -- en directo si hay red (onSnapshot sobre la coleccion viva: si
+   otro deportista sube al primer puesto se ve al momento), o la ultima copia
+   guardada si no la hay -- y (b) las marcas de ESTE dispositivo (incluidas
+   las aun pendientes de subir). Asi, sin conexion, se ve donde queda tu
+   marca dentro del ranking que ya conocias; al volver la red, la cola de
+   pendientes las sube y el global las incluye (se deduplican por
+   nombre+marca+fecha). Las 2 colecciones antiguas (anteriores a v61) ya no
+   cambian: se leen una sola vez y se guardan para siempre. */
+var rankUnsub=null, rankWatchCol=null;
+function stopRankWatch(){ rankWatchCol=null; if(rankUnsub){ try{ rankUnsub(); }catch(e){} rankUnsub=null; } }
+function mergeRank(globalRows,localRows){
+  var out=[], seen={};
+  (globalRows||[]).concat(localRows||[]).forEach(function(r){
+    var k=(r.name||'')+'|'+r.avg+'|'+(r.date||'')+'|'+(r.completed||'');
+    if(!seen[k]){ seen[k]=1; out.push(r); }
+  });
+  return out;
+}
+function rxLegacyRows(col,oldCol,oldLegacyCol){
+  var lk='rds_rank_legacy_'+col, c=null;
+  try{ c=JSON.parse(localStorage.getItem(lk)||'null'); }catch(e){ c=null; }
+  if(c) return Promise.resolve(c);
+  if(!window.fbGetRank) return Promise.resolve([]);
+  return Promise.all([window.fbGetRank(oldCol), window.fbGetRank(oldLegacyCol)]).then(function(a){
+    if(a[0]===null || a[1]===null) return [];   // fallo: no se guarda, se reintenta la proxima vez
+    var l=a[0].concat(a[1]);
+    try{ localStorage.setItem(lk, JSON.stringify(l)); }catch(e){}
+    return l;
+  }).catch(function(){ return []; });
+}
+/* Precarga: al empezar un ejercicio con red, se guarda el ranking de ESA
+   combinacion (como mucho cada 30 min) para verlo luego sin conexion. */
+function warmRank(r,m,p,snd){
+  if(!window.fbReady || !window.fbGetRank || !navigator.onLine) return;
+  var col='scores_reaction_'+r+'_'+m+'_'+p+'_'+snd, rcKey='rds_rank_cache_'+col, t=0;
+  try{ t=+localStorage.getItem(rcKey+'_ts')||0; }catch(e){}
+  if(Date.now()-t < 30*60*1000) return;
+  Promise.all([window.fbGetRank(col), rxLegacyRows(col,'rank_'+r+'_'+m+'_'+p+'_'+snd,'rank_'+r+'_'+m+'_'+p)]).then(function(a){
+    if(a[0]===null) return;
+    try{ localStorage.setItem(rcKey, JSON.stringify(a[0].concat(a[1]))); localStorage.setItem(rcKey+'_ts', String(Date.now())); }catch(e){}
+  }).catch(function(){});
+}
 function renderFullRanking(r,mode,pulse){
   var m=mode||'normal';
   var p=pulse||'press';
   var el=document.getElementById('rank-full-list');
   if(!el) return;
+  stopRankWatch();
   el.innerHTML='<div class="rank-full-empty">Cargando...</div>';
   var latest=null;
   if(rxLast && rxLast.rounds===r && rxLast.mode===m && (rxLast.pulse||'press')===p && rxLast.name){
@@ -2356,7 +2400,10 @@ function renderFullRanking(r,mode,pulse){
   var col='scores_reaction_'+r+'_'+m+'_'+p+'_'+snd;   // coleccion nueva (marcas a partir de v61)
   var oldCol='rank_'+r+'_'+m+'_'+p+'_'+snd;            // marcas anteriores a v61
   var oldLegacyCol='rank_'+r+'_'+m+'_'+p;              // marcas antiguas sin sufijo de sonido
+  var localList=[];
+  try{ localList=JSON.parse(localStorage.getItem('rds_rank_'+r+'_'+m+'_'+p+'_'+snd)||'[]'); }catch(e){ localList=[]; }
   function ordenarYpintarRank(list){
+    list=mergeRank(list, localList);
     if(m==='limite'){
       list.sort(function(a,b){
         if((b.completed||0)!==(a.completed||0)) return (b.completed||0)-(a.completed||0);
@@ -2367,25 +2414,21 @@ function renderFullRanking(r,mode,pulse){
     }
     renderRankList(list,el,m,latest);
   }
-  if(window.fbReady){
-    var rcKey='rds_rank_cache_'+col;
-    var cached=null;
-    try{ cached=JSON.parse(localStorage.getItem(rcKey)||'null'); }catch(e){ cached=null; }
-    if(cached && cached.length){ ordenarYpintarRank(cached.slice()); }
-    Promise.all([window.fbGetRank(col), window.fbGetRank(oldCol), window.fbGetRank(oldLegacyCol)]).then(function(arrs){
-      if(arrs[0]===null){                        // lectura de la coleccion nueva fallo -> cache o localStorage
-        if(!cached || !cached.length){ renderRankList(getRanking(r,m,p),el,m,latest); }
-        return;
-      }
-      var list=[];
-      [arrs[0], arrs[1]||[], arrs[2]||[]].forEach(function(arr){ arr.forEach(function(doc){ list.push(doc); }); });
-      try{ localStorage.setItem(rcKey, JSON.stringify(list)); }catch(e){}
-      ordenarYpintarRank(list);
-    }).catch(function(){
-      if(!cached || !cached.length){ renderRankList(getRanking(r,m,p),el,m,latest); }
+  var rcKey='rds_rank_cache_'+col;
+  var cached=null;
+  try{ cached=JSON.parse(localStorage.getItem(rcKey)||'null'); }catch(e){ cached=null; }
+  ordenarYpintarRank((cached||[]).slice());
+  if(window.fbReady && window.fbWatchRank){
+    rankWatchCol=col;
+    rankUnsub=window.fbWatchRank(col, function(newRows){
+      if(rankWatchCol!==col) return;
+      rxLegacyRows(col,oldCol,oldLegacyCol).then(function(leg){
+        if(rankWatchCol!==col) return;
+        var list=newRows.concat(leg);
+        try{ localStorage.setItem(rcKey, JSON.stringify(list)); localStorage.setItem(rcKey+'_ts', String(Date.now())); }catch(e){}
+        ordenarYpintarRank(list);
+      });
     });
-  } else {
-    renderRankList(getRanking(r,m,p),el,m,latest);
   }
 }
 function goToFullRanking(){
@@ -2574,7 +2617,7 @@ function rxUpdateRankSaveBtn(){
 </script>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, limit }
+    import { getFirestore, collection, addDoc, getDocs, query, limit, onSnapshot }
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -2653,6 +2696,17 @@ function rxUpdateRankSaveBtn(){
 
     // Leer hasta 100 docs de una coleccion de ranking.
     // Devuelve array de objetos si OK, o null si la lectura falla (para caer a localStorage, igual que antes).
+    window.fbWatchRank = function(col, cb){
+      if(!db) return null;
+      try {
+        return onSnapshot(query(collection(db, col), limit(100)), function(snap){
+          if(snap.metadata.fromCache) return;   // sin servidor no hay datos reales: no pisar la copia guardada
+          var out=[]; snap.forEach(function(d){ out.push(d.data()); });
+          cb(out);
+        }, function(){});
+      } catch(e){ return null; }
+    };
+
     window.fbGetRank = async function(col){
       if(!db) return null;
       try {
