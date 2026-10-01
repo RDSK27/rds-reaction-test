@@ -953,7 +953,7 @@ footer {
       </select>
     </div>
   </div>
-  <div class="app-ver">v106</div>
+  <div class="app-ver">v107</div>
   <div id="pending-sync" class="pending-sync"></div>
   </div><!-- fin panel negro -->
   
@@ -2628,7 +2628,7 @@ function rxUpdateRankSaveBtn(){
 </script>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, limit, onSnapshot }
+    import { getFirestore, collection, addDoc, getDocs, query, where, limit, onSnapshot }
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -2698,7 +2698,66 @@ function rxUpdateRankSaveBtn(){
     flushPending();
 
     // Guardar una marca en una coleccion de ranking (dispara y olvida)
-    window.fbAddRank = async function(col, entry){
+    /* Red de seguridad (2026-10-01): garantiza que NINGUNA marca guardada en este dispositivo
+   se quede sin llegar al ranking global (ver el mismo bloque en las demas apps). Aqui las
+   marcas locales viven en 'rds_rank_<rondas>_<modo>_<pulso>_<sonido>' y NO llevan ts: se
+   identifican por nombre+media+fecha. Antes de subir se comprueba tambien en las 2
+   colecciones antiguas (anteriores a v61) para no duplicar marcas que ya estan alli. */
+function reconKeyR(e){ return (e.name||'')+'|'+e.avg+'|'+(e.date||''); }
+function reconCollectR(){
+  var out=[];
+  try{
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i), m=k && k.match(/^rds_rank_(\d+)_([a-z]+)_([a-z0-9]+)_(sound|nosound)$/);
+      if(!m) continue;
+      var arr; try{ arr=JSON.parse(localStorage.getItem(k)); }catch(e){ continue; }
+      if(!Array.isArray(arr)) continue;
+      arr.forEach(function(e){ if(e && e.name && e.avg!=null && e.date){ out.push({ col:'scores_reaction_'+k.slice(9), old1:'rank_'+k.slice(9), old2:'rank_'+m[1]+'_'+m[2]+'_'+m[3], entry:e }); } });
+    }
+  }catch(e){}
+  return out;
+}
+async function reconcileOrphans(force, dry){
+  try{
+    if(!db || !navigator.onLine) return null;
+    var now=Date.now(), TS='rds_rank_recon_ts', OK='rds_rank_recon_ok';
+    if(!force && now-(+localStorage.getItem(TS)||0) < 6*3600*1000) return null;
+    var ok={}; try{ ok=JSON.parse(localStorage.getItem(OK)||'{}')||{}; }catch(e){ ok={}; }
+    var pend={}; loadPending().forEach(function(q){ if(q && q.entry) pend[q.col+'|'+reconKeyR(q.entry)]=1; });
+    var seen={}, cands=[];
+    reconCollectR().forEach(function(c){
+      var k=c.col+'|'+reconKeyR(c.entry); if(seen[k] || ok[k] || pend[k]) return; seen[k]=1; c.k=k; cands.push(c);
+    });
+    if(!cands.length){ if(!dry) localStorage.setItem(TS,String(now)); return {cands:0, add:[]}; }
+    var groups={};   // col -> { names, old1, old2 }
+    cands.forEach(function(c){ var g=groups[c.col]||(groups[c.col]={names:{}, old1:c.old1, old2:c.old2}); g.names[c.entry.name]=1; });
+    var have={};
+    for(var col in groups){
+      var g=groups[col];
+      for(var nm in g.names){
+        var cols=[col, g.old1, g.old2];
+        for(var j=0;j<cols.length;j++){
+          var snap=await withTimeout(getDocs(query(collection(db,cols[j]), where('name','==',nm))), 12000);   // si falla, lanza: no se sube nada
+          snap.forEach(function(d){ have[col+'|'+reconKeyR(d.data())]=1; });
+        }
+      }
+    }
+    var add=[];
+    cands.forEach(function(c){ if(have[c.k]) ok[c.k]=1; else add.push({col:c.col, entry:Object.assign({}, c.entry, {ts:Date.now()}), k:c.k}); });
+    if(dry) return {cands:cands.length, add:add.map(function(a){ return {col:a.col, entry:a.entry}; })};
+    add.forEach(function(a){ ok[a.k]=1; });
+    var ks=Object.keys(ok); if(ks.length>3000){ var n2={}; ks.slice(ks.length-3000).forEach(function(k){ n2[k]=1; }); ok=n2; }
+    if(add.length){ savePending(loadPending().concat(add.map(function(a){ return {col:a.col, entry:a.entry}; }))); updatePendingUI(); }
+    localStorage.setItem(OK,JSON.stringify(ok)); localStorage.setItem(TS,String(now));
+    if(add.length) flushPending();
+    return {cands:cands.length, add:add.length};
+  }catch(e){ return null; }
+}
+window.fbReconcile=function(dry){ return reconcileOrphans(true, !!dry); };
+setTimeout(reconcileOrphans, 8000);
+window.addEventListener('online', function(){ setTimeout(reconcileOrphans, 4000); });
+document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='visible'){ setTimeout(reconcileOrphans, 4000); } });
+window.fbAddRank = async function(col, entry){
       if(!db) return false;
       if(!navigator.onLine){ var p1=loadPending(); p1.push({col:col,entry:entry}); savePending(p1); updatePendingUI(); return false; }
       try { await withTimeout(addDoc(collection(db, col), entry), 8000); return true; }
