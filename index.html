@@ -953,7 +953,7 @@ footer {
       </select>
     </div>
   </div>
-  <div class="app-ver">v105</div>
+  <div class="app-ver">v106</div>
   <div id="pending-sync" class="pending-sync"></div>
   </div><!-- fin panel negro -->
   
@@ -2351,6 +2351,16 @@ function renderRankList(list, el, m, latest){
    cambian: se leen una sola vez y se guardan para siempre. */
 var rankUnsub=null, rankWatchCol=null;
 function stopRankWatch(){ rankWatchCol=null; if(rankUnsub){ try{ rankUnsub(); }catch(e){} rankUnsub=null; } }
+/* 2026-10-01: de lo local solo se muestran las marcas PENDIENTES de subir (la cola
+   rds_rank_pending), NO todo el historial de este dispositivo. Antes se sumaba todo lo
+   guardado en local y, si alguna marca nunca llego a Firestore, solo este aparato
+   la veia y los rankings de distintos aparatos no coincidian. Las marcas ya
+   subidas llegan por el ranking global; las pendientes se ven aqui hasta que suban. */
+function pendingOnly(list){
+  var set={};
+  try{ JSON.parse(localStorage.getItem('rds_rank_pending')||'[]').forEach(function(q){ var r=(q && q.entry) ? q.entry : q; if(r) set[(r.name||'')+'|'+r.avg+'|'+(r.date||'')]=1; }); }catch(e){}
+  return (list||[]).filter(function(r){ return set[(r.name||'')+'|'+r.avg+'|'+(r.date||'')]; });
+}
 function mergeRank(globalRows,localRows){
   var out=[], seen={};
   (globalRows||[]).concat(localRows||[]).forEach(function(r){
@@ -2402,6 +2412,7 @@ function renderFullRanking(r,mode,pulse){
   var oldLegacyCol='rank_'+r+'_'+m+'_'+p;              // marcas antiguas sin sufijo de sonido
   var localList=[];
   try{ localList=JSON.parse(localStorage.getItem('rds_rank_'+r+'_'+m+'_'+p+'_'+snd)||'[]'); }catch(e){ localList=[]; }
+  localList=pendingOnly(localList);
   function ordenarYpintarRank(list){
     list=mergeRank(list, localList);
     if(m==='limite'){

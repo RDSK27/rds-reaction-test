@@ -1,5 +1,5 @@
 /* RDS Velocidad de Reaccion - Service Worker */
-var CACHE = 'rds-reaction-v105';
+var CACHE = 'rds-reaction-v106';
 var ASSETS = [
   './',
   './index.html',
