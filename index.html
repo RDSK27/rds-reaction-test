@@ -186,7 +186,13 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
 }
 .seg-btn:last-child { border-right:none; }
 .seg-btn.active { background:#b03020; color:#fff; text-shadow:none; }
-.seg-sound { width:min(80vw,450px); margin-left:auto; margin-right:auto; }
+/* Sonido: dos campanas sueltas (sin botón ni texto). Sin sonido (tachada) a la izquierda y por defecto;
+   la seleccionada en rojo, la otra atenuada. */
+.snd-row { display:flex; justify-content:center; align-items:center; gap:36px; }
+.snd-ico { background:none; border:none; padding:2px 8px; margin:0; cursor:pointer; line-height:0; color:#b03020; opacity:0.28; transition:opacity 0.15s; -webkit-tap-highlight-color:transparent; }
+.snd-ico.sel { opacity:1; }
+.snd-ico.blocked { pointer-events:none; }
+.snd-ico svg { width:30px; height:30px; display:block; }
 .seg-pulse { width:min(66vw,370px); margin-left:auto; margin-right:auto; }
 #pulse-btn-press.active, #pulse-btn-press2.active, #pulse-btn-press2i.active, #pulse-btn-release.active, #pulse-btn-release2.active, #pulse-btn-release2i.active { background:#b03020; color:#fff; border-color:#b03020; }
 
@@ -568,7 +574,7 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
 }
 .btn-ranking:active{transform:translateY(3px);}
 
-.home-btn-row{ display:flex; align-items:center; justify-content:center; gap:16px; margin-top:15px; }
+.home-btn-row{ display:flex; align-items:center; justify-content:center; gap:16px; margin-top:6px; }
 .home-btn-row #btn-start-wrap{ margin:0; }
 .app-ver{ margin-top:auto; text-align:center; color:#9a9a9a; font-size:0.72rem; letter-spacing:0.12em; font-family:Arial,sans-serif; padding-top:6px; }
 .pending-sync{ display:none; margin-top:4px; text-align:center; color:#e0a030; font-size:0.68rem; letter-spacing:0.03em; font-family:Arial,sans-serif; }
@@ -668,7 +674,7 @@ footer {
   padding:0 0 5px;
   box-sizing:border-box;
   gap:0;
-  margin-top:31px;
+  margin-top:10px;
 }
 #user-name-input {
   width:190px;
@@ -789,6 +795,31 @@ footer {
 #btn-start:active {
   box-shadow:inset 0 3px 7px rgba(0,0,0,0.6);
 }
+/* v109: se adapta a la altura disponible (p. ej. apps abiertas desde SuiteRDS, con barra inferior):
+   Inicio/Repetir de la pantalla de juego siempre visibles y START del inicio más arriba. */
+#screen-game { overflow:hidden; }   /* en juego el arrastre táctil ya está bloqueado: no hay scroll posible */
+#arena-r2-wrapper { min-height:0; }
+.r2-outer { min-height:0; }
+.r2-buttons { min-height:90px; }
+#arena { min-height:110px; }
+.game-controls { flex:0 0 auto; }
+@media (max-height:760px) {
+  .home-hero-title { font-size:1.6rem; }
+  .home-hero-logo { width:min(30vw,110px,9svh); margin:3px auto 0; }
+  .stats-bar { grid-template-columns:repeat(4,1fr); }
+  .stat-card { padding:5px 3px 4px; gap:1px; }
+  .stat-value { font-size:1.2rem; }
+  .meter-wrap { padding:6px 12px 4px; gap:3px; }
+  .meter-last-value { font-size:1.35rem; }
+  .meter-last-label { display:none; }
+  .meter-bar-wrap { height:16px; margin:2px 0 0; }
+  .meter-rating { font-size:0.56rem; min-height:1em; }
+  #screen-game { gap:5px; padding-top:6px; }
+  #arena { padding:10px 14px; gap:4px; }
+}
+@media (max-height:640px) {
+  .home-hero-logo { display:none; }
+}
 </style>
   <link rel="manifest" href="manifest.json">
   <script>
@@ -885,9 +916,9 @@ footer {
   <div class="action-row">
     <div class="selector-wrap">
     <div class="selector-label">Sonido</div>
-    <div class="seg-group seg-sound">
-      <button class="seg-btn active" id="sound-btn-on" onclick="setSoundMode(true)">&#128276; Con sonido</button>
-      <button class="seg-btn" id="sound-btn-off" onclick="setSoundMode(false)">&#128277; Sin sonido</button>
+    <div class="snd-row">
+      <button class="snd-ico sel" id="sound-btn-off" onclick="setSoundMode(false)" aria-label="Sin sonido" title="Sin sonido"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/><line x1="3" y1="3" x2="21" y2="21"/></svg></button>
+      <button class="snd-ico" id="sound-btn-on" onclick="setSoundMode(true)" aria-label="Con sonido" title="Con sonido"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></button>
     </div>
   </div>
 
@@ -905,7 +936,7 @@ footer {
     </div>
   </div>
 
-  <div style="border:3px solid #b03020;border-radius:10px;background-color:#000000;padding:20px 12px 12px;display:flex;flex-direction:column;align-items:center;width:92%;min-height:250px;box-sizing:border-box;margin-bottom:10px;margin-top:auto;">
+  <div style="border:3px solid #b03020;border-radius:10px;background-color:#000000;padding:12px 12px 8px;display:flex;flex-direction:column;align-items:center;width:92%;box-sizing:border-box;margin-bottom:10px;margin-top:auto;">
   <div class="home-btn-row">
   <div id="btn-start-wrap">
   <button id="btn-start" ontouchend="event.stopPropagation();" onclick="playClick();prepareAndCountdown()">START</button>
@@ -953,7 +984,7 @@ footer {
       </select>
     </div>
   </div>
-  <div class="app-ver">v108</div>
+  <div class="app-ver">v109</div>
   <div id="pending-sync" class="pending-sync"></div>
   </div><!-- fin panel negro -->
   
@@ -1077,8 +1108,8 @@ footer {
     <button class="rank-tab" id="rtab50" onclick="showRankTab(50)">50</button>
   </div>
   <div class="rank-tabs" style="margin-bottom:0;margin-top:-1px;">
-    <button class="rank-tab active" id="rsound-on" onclick="showRankSound(true)">Con sonido</button>
-    <button class="rank-tab" id="rsound-off" onclick="showRankSound(false)">Sin sonido</button>
+    <button class="rank-tab active" id="rsound-off" onclick="showRankSound(false)">Sin sonido</button>
+    <button class="rank-tab" id="rsound-on" onclick="showRankSound(true)">Con sonido</button>
   </div>
   <div class="rank-tabs" style="margin-bottom:0;margin-top:-1px;">
     <button class="rank-tab active" id="rpulse-press" onclick="showRankPulse('press')">Bajar</button>
@@ -1256,17 +1287,9 @@ function restoreBest(){
 function setMode(m){
   if(!audioCtx) initAudio();
   gameMode=m;
-  var son=document.getElementById('sound-btn-on');
-  var soff=document.getElementById('sound-btn-off');
-  if(m==='distractor'||m==='gonogo'){
-    // En distractor y Go/NoGo: forzar sin sonido y bloquear botones
-    soundMode=false;
-    if(son){son.className='seg-btn';son.style.opacity='0.35';son.style.pointerEvents='none';}
-    if(soff){soff.className='seg-btn active';soff.style.opacity='0.35';soff.style.pointerEvents='none';}
-  } else {
-    if(son){son.style.opacity='';son.style.pointerEvents='';}
-    if(soff){soff.style.opacity='';soff.style.pointerEvents='';}
-  }
+  // En distractor y Go/NoGo: forzar sin sonido y bloquear las campanas
+  if(m==='distractor'||m==='gonogo') soundMode=false;
+  paintSound();
   // Si distractor seleccionado con press2 o release2, volver a press
   if(m==='distractor' && (pulseMode==='release2'||pulseMode==='press2'||pulseMode==='press2i'||pulseMode==='release2i')){
     pulseMode='press';
@@ -2219,7 +2242,7 @@ function getRatingColor(ms){
 var activeRankTab=10;
 var activeRankMode='normal';
 var activeRankPulse='press';
-var activeRankSound=true;
+var activeRankSound=false;
 
 function showRankSound(on){
   activeRankSound=on;
@@ -2452,12 +2475,17 @@ function goToFullRanking(){
 function repeatGame(){initAudio();resetGameState();distractorQueue=buildDistractorQueue();if(gameMode==='limite')initLimiteMode();showScreen('game');startCountdown(function(){startWaiting();});}
 
 var hideRepeated=false;
-var soundMode=true;
+var soundMode=false;   /* por defecto SIN sonido */
 
+function paintSound(){
+  var son=document.getElementById('sound-btn-on'), soff=document.getElementById('sound-btn-off');
+  var blocked=(gameMode==='distractor'||gameMode==='gonogo');
+  if(son) son.className='snd-ico'+(soundMode?' sel':'')+(blocked?' blocked':'');
+  if(soff) soff.className='snd-ico'+(!soundMode?' sel':'')+(blocked?' blocked':'');
+}
 function setSoundMode(on){
   soundMode=on;
-  document.getElementById('sound-btn-on').className='seg-btn'+(on?' active':'');
-  document.getElementById('sound-btn-off').className='seg-btn'+(!on?' active':'');
+  paintSound();
   playClick();
 }
 function toggleHideRepeated(){
