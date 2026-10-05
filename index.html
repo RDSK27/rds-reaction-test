@@ -506,6 +506,9 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
   font-size:16px; font-family:inherit;
   color:#111; width:0;
 }
+.pos-wrap{display:none;flex-direction:column;align-items:center;gap:4px;padding:0 16px 8px;text-align:center;}
+.pos-circle{width:54px;height:54px;border-radius:50%;background:#000;color:#fff;font-weight:900;font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;font-family:inherit;}
+.pos-txt{font-size:10px;font-weight:700;letter-spacing:0.04em;color:#555;}
 .save-row-inner { display:flex; align-items:stretch; justify-content:center; gap:8px; width:calc(60% + 92px); max-width:calc(100% - 28px); margin:0 auto; }
 .results-save-btn {
   flex:1; max-width:60%; padding:7px;
@@ -984,7 +987,7 @@ footer {
       </select>
     </div>
   </div>
-  <div class="app-ver">v111</div>
+  <div class="app-ver">v112</div>
   <div id="pending-sync" class="pending-sync"></div>
   </div><!-- fin panel negro -->
   
@@ -1079,6 +1082,7 @@ footer {
   </div>
   </div><!-- fin screen-scroll -->
   <div style="margin-top:16px;">
+    <div class="pos-wrap" id="posWrap"><div class="pos-circle" id="posNum">-</div><div class="pos-txt">posici&#243;n de este resultado en el ranking</div></div>
     <div class="save-row-inner">
       <button class="results-save-btn" onclick="saveFromResults()">Guardar</button>
       <button class="results-rank-btn" onclick="goToFullRanking()">Ranking</button>
@@ -2071,6 +2075,28 @@ function saveFromResults(){
   activeRankingTab=totalRounds;
   rxSaved=true;
 }
+/* Posicion de este resultado (2026-10-05): con la copia local del ranking de esta combinacion (cache + marcas pendientes
+   de este dispositivo), sin lecturas de Firestore. Cuenta solo la mejor marca de cada OTRA persona. Sin copia guardada, no se muestra. */
+function updatePos(){
+  var w=document.getElementById('posWrap'); if(!w) return;
+  w.style.display='none';
+  try{
+    var m=gameMode||'normal', p=pulseMode||'press', snd=soundMode?'sound':'nosound';
+    var g=JSON.parse(localStorage.getItem('rds_rank_cache_scores_reaction_'+totalRounds+'_'+m+'_'+p+'_'+snd)||'null'); if(!g) return;
+    if(!isFinite(currentAvg)) return;
+    var rec={ name:(savedUserName||savedName||'').trim().toUpperCase(), avg:currentAvg, date:new Date().toLocaleDateString('es-ES') };
+    if(m==='limite') rec.completed=limiteRoundsCompleted;
+    var local=[]; try{ local=pendingOnly(JSON.parse(localStorage.getItem('rds_rank_'+totalRounds+'_'+m+'_'+p+'_'+snd)||'[]')); }catch(e){}
+    function srt(l){ if(m==='limite') l.sort(function(a,b){ if((b.completed||0)!==(a.completed||0)) return (b.completed||0)-(a.completed||0); return (a.avg||9999)-(b.avg||9999); }); else l.sort(function(a,b){ return (a.avg||9999)-(b.avg||9999); }); }
+    var rows=mergeRank(g,local); srt(rows);
+    var seen={}, out=[], me=(rec.name||'').toLowerCase().trim();
+    rows.forEach(function(r){ var n=(r.name||'').toLowerCase().trim(); if(n===me||seen[n]) return; seen[n]=1; out.push(r); });
+    out.push(rec); srt(out);
+    var pos=out.indexOf(rec)+1, e=document.getElementById('posNum');
+    e.textContent=pos; e.style.fontSize=pos>=100?'16px':(pos>=10?'22px':'26px');
+    w.style.display='flex';
+  }catch(e){}
+}
 function goToResults(){
   var saveBtn=document.getElementById('results-save-btn')||document.querySelector('.results-save-btn');
   if(saveBtn){ saveBtn.style.opacity=''; saveBtn.style.background=''; saveBtn.style.borderColor=''; saveBtn.style.cursor=''; saveBtn.disabled=false; saveBtn.textContent='Guardar'; }
@@ -2090,7 +2116,7 @@ function goToResults(){
     document.getElementById('results-avg-display').textContent=currentAvg+' ms';
     document.getElementById('results-meta-display').textContent=getRatingLabel(currentAvg)+' -- '+totalRounds+' rondas';
   }
-  buildHistoryResults();renderChart();showScreen('results');
+  updatePos();buildHistoryResults();renderChart();showScreen('results');
 }
 function buildHistoryResults(){
   var grid=document.getElementById('history-grid-results');grid.innerHTML='';
