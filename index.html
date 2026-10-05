@@ -984,7 +984,7 @@ footer {
       </select>
     </div>
   </div>
-  <div class="app-ver">v110</div>
+  <div class="app-ver">v111</div>
   <div id="pending-sync" class="pending-sync"></div>
   </div><!-- fin panel negro -->
   
@@ -2406,16 +2406,36 @@ function rxLegacyRows(col,oldCol,oldLegacyCol){
 }
 /* Precarga: al empezar un ejercicio con red, se guarda el ranking de ESA
    combinacion (como mucho cada 30 min) para verlo luego sin conexion. */
-function warmRank(r,m,p,snd){
+function warmRank(r,m,p,snd,force){
   if(!window.fbReady || !window.fbGetRank || !navigator.onLine) return;
   var col='scores_reaction_'+r+'_'+m+'_'+p+'_'+snd, rcKey='rds_rank_cache_'+col, t=0;
   try{ t=+localStorage.getItem(rcKey+'_ts')||0; }catch(e){}
-  if(Date.now()-t < 30*60*1000) return;
-  Promise.all([window.fbGetRank(col), rxLegacyRows(col,'rank_'+r+'_'+m+'_'+p+'_'+snd,'rank_'+r+'_'+m+'_'+p)]).then(function(a){
+  if(!force && Date.now()-t < 30*60*1000) return;
+  return Promise.all([window.fbGetRank(col), rxLegacyRows(col,'rank_'+r+'_'+m+'_'+p+'_'+snd,'rank_'+r+'_'+m+'_'+p)]).then(function(a){
     if(a[0]===null) return;
     try{ localStorage.setItem(rcKey, JSON.stringify(a[0].concat(a[1]))); localStorage.setItem(rcKey+'_ts', String(Date.now())); }catch(e){}
   }).catch(function(){});
 }
+/* Preparar para offline (lo lanza SuiteRDS desde Admin): guarda el ranking de TODAS las
+   combinaciones, sin el limite de 30 min. Devuelve true si todas se guardaron. */
+window.rdsPrepare=async function(){
+  for(var w=0; w<150 && !(window.fbReady && window.fbGetRank); w++) await new Promise(function(ok){ setTimeout(ok,100); });
+  if(!(window.fbReady && window.fbGetRank) || !navigator.onLine) return false;
+  var R=[10,15,30,50], M=['normal','limite','distractor','gonogo'], P=['press','press2','press2i','release','release2','release2i'], jobs=[], i=0, ok=true, start=Date.now();
+  R.forEach(function(r){ M.forEach(function(m){ P.forEach(function(p){
+    (m==='distractor'||m==='gonogo'?['nosound']:['sound','nosound']).forEach(function(s){ jobs.push([r,m,p,s]); });
+  }); }); });
+  async function worker(){
+    while(i<jobs.length){
+      var j=jobs[i++], t=0;
+      try{ await warmRank(j[0],j[1],j[2],j[3],true); }catch(e){}
+      try{ t=+localStorage.getItem('rds_rank_cache_scores_reaction_'+j.join('_')+'_ts')||0; }catch(e){}
+      if(t<start) ok=false;
+    }
+  }
+  await Promise.all([worker(),worker(),worker(),worker(),worker(),worker()]);
+  return ok;
+};
 function renderFullRanking(r,mode,pulse){
   var m=mode||'normal';
   var p=pulse||'press';
