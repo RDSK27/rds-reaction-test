@@ -987,7 +987,7 @@ footer {
       </select>
     </div>
   </div>
-  <div class="app-ver">v112</div>
+  <div class="app-ver">v113</div>
   <div id="pending-sync" class="pending-sync"></div>
   </div><!-- fin panel negro -->
   
@@ -2418,7 +2418,12 @@ function mergeRank(globalRows,localRows){
   });
   return out;
 }
+/* v113 (2026-10-10, pedido de Roberto): el ranking de la app solo lee las colecciones nuevas scores_reaction_* (las unicas que usa SuiteRDS en Clasificacion y
+   Campeonatos), para que app y Clasificacion coincidan. Las colecciones antiguas rank_* (marcas anteriores a la v61 y sin sufijo de sonido) siguen en Firestore
+   pero ya no se muestran. Para volver a incluirlas: RX_LEGACY=true. */
+var RX_LEGACY=false;
 function rxLegacyRows(col,oldCol,oldLegacyCol){
+  if(!RX_LEGACY) return Promise.resolve([]);
   var lk='rds_rank_legacy_'+col, c=null;
   try{ c=JSON.parse(localStorage.getItem(lk)||'null'); }catch(e){ c=null; }
   if(c) return Promise.resolve(c);
