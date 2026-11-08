@@ -987,7 +987,7 @@ footer {
   <button class="start-btn rank-btn" onclick="showFullRanking()" aria-label="Ranking"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#333333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 13.5v7.5M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 4H4v2a3 3 0 0 0 3 3M17 4h3v2a3 3 0 0 1-3 3"/></svg></button>
 </div>
   </div>
-  <div class="app-ver" style="margin-top:6px;padding-top:0;">v120</div>
+  <div class="app-ver" style="margin-top:6px;padding-top:0;">v121</div>
   <div id="user-name-bar" style="margin-top:8px;">
     <div style="display:flex;width:200px;gap:0;margin:0 auto;">
       <input id="user-ini-input" type="text" maxlength="3" placeholder="INI"
@@ -1502,11 +1502,11 @@ function goHome(){if(waitTimer)clearTimeout(waitTimer);appState='idle';showScree
    Se combina con Normal o Go/NoGo, siempre Bajar, sin sonido. Jugador 1 = mitad de abajo, jugador 2 = mitad de arriba (girada 180 grados), con un boton negro cada uno.
    Sale un cuadro rojo: gana el punto quien pulse primero. Pulsar antes de que salga, o pulsar en amarillo (Go/NoGo): -1 para quien pulsa y +1 para el rival.
    Amarillo sin pulsar: desaparece a los X_NOGO ms, nadie puntua y cuenta como cuadro. Tras la primera pulsacion se ignora todo X_FREEZE ms.
-   Cada juego = 15 cuadros, mejor de 3. Gana quien tenga X_MARGIN puntos de ventaja al llegar a 15; si no, cuadros extra (puntos parpadeando) hasta conseguirla.
+   Cada juego = 10 cuadros, mejor de 3. Gana quien tenga X_MARGIN puntos de ventaja al llegar a 10; si no, cuadros extra (puntos parpadeando) hasta conseguirla.
    Se para antes si ya esta decidido: la ventaja, restando lo maximo que puede recortarse (X_SWING por cuadro restante), sigue siendo >= X_MARGIN. */
 var xOn=false;
 var X={on:false,mode:'normal',pts:[0,0],games:[0,0],gameNo:1,n:0,state:'',t0:0,to:0,hist:[],seq:[],si:0,red:true,ready:[false,false]};
-var X_TOTAL=15, X_SWING=2, X_MARGIN=2, X_FREEZE=1000, X_NOGO=700, X_WINGAMES=2, X_ORD=['primer','segundo','tercer'];
+var X_TOTAL=10, X_SWING=2, X_MARGIN=2, X_FREEZE=1000, X_NOGO=700, X_WINGAMES=2, X_ORD=['primer','segundo','tercer'];
 function xEl(id){ return document.getElementById(id); }
 function xPaintHome(){
   var off=['mode-btn-distractor','mode-btn-limite','home-btn10','home-btn15','home-btn30','home-btn50','pulse-btn-press','pulse-btn-press2','pulse-btn-press2i','pulse-btn-release','pulse-btn-release2','pulse-btn-release2i'], i;
@@ -1542,7 +1542,7 @@ function xRender(){
 function xGameSetup(){ X.seq=X.mode==='gonogo'?buildGonogoTrials(X_TOTAL):[]; X.si=0; }
 function xDraw(){
   if(X.mode!=='gonogo') return true;
-  return X.si<X.seq.length?X.seq[X.si++]:Math.random()<0.5;   /* cuadros extra tras el 15 */
+  return X.si<X.seq.length?X.seq[X.si++]:Math.random()<0.5;   /* cuadros extra tras el 10 */
 }
 function xReset(){ xClear(); X.pts=[0,0]; X.games=[0,0]; X.gameNo=1; X.n=0; X.hist=[]; xPanelsOff(); xFlash(); xStim(); }
 function startX2(){   /* pantalla inicial con la informacion para cada jugador */
@@ -1552,7 +1552,7 @@ function startX2(){   /* pantalla inicial con la informacion para cada jugador *
   showScreen('x2'); xEl('x2Stop').style.display='block'; xRender();
   var gng=X.mode==='gonogo';
   for(var p=0;p<2;p++) xPanel(p,'<div class="x2-pt">Jugador '+(p+1)+(gng?' &middot; Go/NoGo':'')+'</div>'
-    +'<div class="x2-pr">Uno contra uno, al mejor de 3 juegos de 15 puntos.<br>Si al llegar a 15 no hay 2 de diferencia, se sigue hasta conseguirla.</div>'
+    +'<div class="x2-pr">Uno contra uno, al mejor de 3 juegos de 10 puntos.<br>Si al llegar a 10 no hay 2 de diferencia, se sigue hasta conseguirla.</div>'
     +(gng?'<div class="x2-rules"><b>Rojo</b>: pulsa. <b>Amarillo</b>: no pulses; si pulsas, -1 para ti y +1 para el rival.</div>':'')
     +xBtn('start','Empezar'));
 }
