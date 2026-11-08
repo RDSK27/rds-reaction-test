@@ -186,6 +186,40 @@ header img { width:100%; height:auto; display:block; margin-bottom:0; }
 }
 .seg-btn:last-child { border-right:none; }
 .seg-btn.active { background:#b03020; color:#fff; text-shadow:none; }
+#mode-btn-x2 { flex:0 0 40px; }
+.seg-btn.x2on { background:#F5C400; color:#111; text-shadow:none; }
+@media (max-width:360px){ .seg-modes .seg-btn { font-size:0.56rem; letter-spacing:0; padding:9px 1px; border-right-width:2px; } #mode-btn-x2 { flex:0 0 30px; } }
+/* modo x2 (dos jugadores) */
+body.x2-active header { display:none; }
+#screen-x2.active { padding:0; gap:0; overflow:hidden; touch-action:none; -webkit-user-select:none; user-select:none; }
+.x2-zone { flex:1; min-height:0; display:flex; flex-direction:column; gap:6px; padding:8px 12px 10px; background:#fff; }
+.x2-top { transform:rotate(180deg); }
+.x2-info { display:flex; align-items:baseline; justify-content:space-between; gap:8px; padding:0 4px; flex:none; font-weight:900; white-space:nowrap; }
+.x2-pts { font-size:28px; line-height:1.15; color:var(--rds-red); }
+.x2-pts.x2-blink { animation:x2blink .8s steps(2,jump-none) infinite; }
+@keyframes x2blink { from { opacity:1; } to { opacity:.12; } }
+.x2-gm, .x2-cu { font-size:21px; color:#111; }
+.x2-area { flex:1; min-height:0; position:relative; display:flex; flex-direction:column; }
+.x2-press { flex:1; min-height:0; background:#111; border-radius:8px; -webkit-tap-highlight-color:transparent; }
+.x2-press:active { background:#2c2c2c; }
+.x2-flash { position:absolute; left:0; right:0; bottom:12px; text-align:center; font-size:17px; font-weight:900; color:#fff; text-transform:uppercase; pointer-events:none; }
+.x2-panel { touch-action:pan-y; position:absolute; inset:0; z-index:2; display:none; flex-direction:column; align-items:center; justify-content:center; gap:9px; padding:10px 14px; background:#fff; border:2px solid #111; border-radius:8px; text-align:center; overflow:auto; color:#111; }
+.x2-panel.on { display:flex; }
+.x2-pt { font-size:21px; font-weight:900; line-height:1.15; color:var(--rds-red); }
+.x2-pr { font-size:15px; font-weight:700; line-height:1.3; }
+.x2-rules { font-size:13px; font-weight:600; line-height:1.25; }
+.x2-pbs { display:flex; gap:10px; }
+.x2-bt { min-width:120px; padding:12px 16px; background:var(--rds-red); color:#fff; border:0; border-radius:6px; font-size:15px; font-weight:900; letter-spacing:.05em; text-transform:uppercase; cursor:pointer; }
+.x2-bt.x2-sec { background:#111; }
+.x2-bt:disabled { background:#8a8a8a; cursor:default; }
+@media (max-height:620px){ .x2-panel { gap:3px; padding:2px 10px; } .x2-pt { font-size:18px; } .x2-pr { font-size:13px; line-height:1.2; } .x2-rules { font-size:11px; line-height:1.15; } .x2-bt { min-width:104px; padding:9px 12px; font-size:14px; } }
+.x2-mid { display:flex; align-items:center; justify-content:center; position:relative; flex:none; background:#111; border-top:3px solid #b03020; border-bottom:3px solid #b03020; padding:4px 0; }
+#x2Stim { width:132px; height:58px; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:10px; border:2px solid #333; }
+#x2Stim.x2-lights { background:#fff; }
+#x2Stim.x2-red { background:radial-gradient(ellipse at center,#ff3300 0%,#cc0000 50%,#990000 100%); }
+#x2Stim.x2-yellow { background:radial-gradient(ellipse at center,#ffd633 0%,#f0b000 50%,#cc8800 100%); }
+.x2-lt { display:block; width:26px; height:26px; border-radius:50%; background:#d8281c; box-shadow:inset 0 3px 5px rgba(255,255,255,.35),0 0 10px rgba(216,40,28,.7); }
+#x2Stop { position:absolute; right:12px; top:50%; margin-top:-20px; width:40px; height:40px; padding:0; border-radius:50%; border:2px solid #fff; background:#b03020; color:#fff; font-size:20px; font-weight:900; line-height:1; cursor:pointer; }
 /* Sonido: dos campanas sueltas (sin botón ni texto). Sin sonido (tachada) a la izquierda y por defecto;
    la seleccionada en rojo, la otra atenuada. */
 .snd-row { display:flex; justify-content:center; align-items:center; gap:36px; }
@@ -902,11 +936,12 @@ footer {
 
   <div class="selector-wrap">
     <div class="selector-label">Modo de juego</div>
-    <div class="seg-group">
+    <div class="seg-group seg-modes">
       <button class="seg-btn active" id="mode-btn-normal" onclick="setMode('normal')">Normal</button>
       <button class="seg-btn" id="mode-btn-gonogo" onclick="setMode('gonogo')">Go/NoGo</button>
       <button class="seg-btn" id="mode-btn-distractor" onclick="setMode('distractor')">Distractor</button>
       <button class="seg-btn" id="mode-btn-limite" onclick="setMode('limite')">Limite</button>
+      <button class="seg-btn" id="mode-btn-x2" onclick="xToggle()">x2</button>
     </div>
   </div>
 
@@ -952,7 +987,7 @@ footer {
   <button class="start-btn rank-btn" onclick="showFullRanking()" aria-label="Ranking"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#333333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 13.5v7.5M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 4H4v2a3 3 0 0 0 3 3M17 4h3v2a3 3 0 0 1-3 3"/></svg></button>
 </div>
   </div>
-  <div class="app-ver" style="margin-top:6px;padding-top:0;">v119</div>
+  <div class="app-ver" style="margin-top:6px;padding-top:0;">v120</div>
   <div id="user-name-bar" style="margin-top:8px;">
     <div style="display:flex;width:200px;gap:0;margin:0 auto;">
       <input id="user-ini-input" type="text" maxlength="3" placeholder="INI"
@@ -1070,6 +1105,29 @@ footer {
 
 
 <!-- RESULTS -->
+<div class="screen" id="screen-x2">
+    <div class="x2-zone x2-top" id="x2z1">
+      <div class="x2-info"><span class="x2-pts"></span><span class="x2-gm"></span><span class="x2-cu"></span></div>
+      <div class="x2-area">
+        <div class="x2-press" data-p="1"></div>
+        <div class="x2-flash"></div>
+        <div class="x2-panel"></div>
+      </div>
+    </div>
+    <div class="x2-mid">
+      <div id="x2Stim"></div>
+      <button id="x2Stop" type="button" aria-label="Parar">&#10005;</button>
+    </div>
+    <div class="x2-zone" id="x2z0">
+      <div class="x2-info"><span class="x2-pts"></span><span class="x2-gm"></span><span class="x2-cu"></span></div>
+      <div class="x2-area">
+        <div class="x2-press" data-p="0"></div>
+        <div class="x2-flash"></div>
+        <div class="x2-panel"></div>
+      </div>
+    </div>
+</div>
+
 <div class="screen" id="screen-results" style="justify-content:flex-start;padding-bottom:0;">
   <div class="screen-scroll">
   <div class="results-summary">
@@ -1322,6 +1380,7 @@ function setMode(m){
   document.getElementById('mode-btn-gonogo').className='seg-btn'+(m==='gonogo'?' active':'');
   document.getElementById('mode-btn-distractor').className='seg-btn'+(m==='distractor'?' active':'');
   document.getElementById('mode-btn-limite').className='seg-btn'+(m==='limite'?' active':'');
+  if(xOn) xPaintHome();
   playClick();
 }
 var LUCKY_LIMIT=135,DISPLAY_CORRECTION=30;
@@ -1400,9 +1459,10 @@ function addToRanking(r,name,avg,mode,completedRounds){
 }
 
 function showScreen(name){ if(name!=='ranking' && typeof stopRankWatch==='function') stopRankWatch();
-  var ss=['home','game','results','ranking'];
+  var ss=['home','game','results','ranking','x2'];
   for(var i=0;i<ss.length;i++) document.getElementById('screen-'+ss[i]).className='screen'+(ss[i]===name?' active':'');
   document.body.classList.toggle('home-active', name==='home');
+  document.body.classList.toggle('x2-active', name==='x2');
 }
 
 function showTab(n){
@@ -1438,8 +1498,156 @@ function homeSetRounds(n){
   playClick();
 }
 function goHome(){if(waitTimer)clearTimeout(waitTimer);appState='idle';showScreen('home');showTab(activeRankingTab);}
-function buildGonogoTrials(){
-  var n=totalRounds;var minRed=Math.ceil(n*0.30);
+/* ---------- modo x2: dos jugadores en un movil, sin ranking (2026-11-08; misma estructura que Processing x2) ----------
+   Se combina con Normal o Go/NoGo, siempre Bajar, sin sonido. Jugador 1 = mitad de abajo, jugador 2 = mitad de arriba (girada 180 grados), con un boton negro cada uno.
+   Sale un cuadro rojo: gana el punto quien pulse primero. Pulsar antes de que salga, o pulsar en amarillo (Go/NoGo): -1 para quien pulsa y +1 para el rival.
+   Amarillo sin pulsar: desaparece a los X_NOGO ms, nadie puntua y cuenta como cuadro. Tras la primera pulsacion se ignora todo X_FREEZE ms.
+   Cada juego = 15 cuadros, mejor de 3. Gana quien tenga X_MARGIN puntos de ventaja al llegar a 15; si no, cuadros extra (puntos parpadeando) hasta conseguirla.
+   Se para antes si ya esta decidido: la ventaja, restando lo maximo que puede recortarse (X_SWING por cuadro restante), sigue siendo >= X_MARGIN. */
+var xOn=false;
+var X={on:false,mode:'normal',pts:[0,0],games:[0,0],gameNo:1,n:0,state:'',t0:0,to:0,hist:[],seq:[],si:0,red:true,ready:[false,false]};
+var X_TOTAL=15, X_SWING=2, X_MARGIN=2, X_FREEZE=1000, X_NOGO=700, X_WINGAMES=2, X_ORD=['primer','segundo','tercer'];
+function xEl(id){ return document.getElementById(id); }
+function xPaintHome(){
+  var off=['mode-btn-distractor','mode-btn-limite','home-btn10','home-btn15','home-btn30','home-btn50','pulse-btn-press','pulse-btn-press2','pulse-btn-press2i','pulse-btn-release','pulse-btn-release2','pulse-btn-release2i'], i;
+  for(i=0;i<off.length;i++) xEl(off[i]).classList.toggle('seg-btn-disabled',xOn);
+  document.querySelector('.snd-row').classList.toggle('seg-btn-disabled',xOn);
+  xEl('mode-btn-x2').classList.toggle('x2on',xOn);
+}
+function xToggle(){
+  if(!audioCtx) initAudio();
+  xOn=!xOn;
+  if(xOn && gameMode!=='normal' && gameMode!=='gonogo') setMode('normal');   /* x2 solo se combina con Normal o Go/NoGo */
+  else playClick();
+  xPaintHome();
+}
+function xClear(){ if(X.to){ clearTimeout(X.to); X.to=0; } }
+function xZone(p,sel){ return xEl('x2z'+p).querySelector(sel); }
+function xFlash(a,b){ xZone(0,'.x2-flash').innerHTML=a||''; xZone(1,'.x2-flash').innerHTML=b||''; }
+function xPanel(p,html){ var e=xZone(p,'.x2-panel'); e.innerHTML=html||''; e.classList.toggle('on',!!html); }
+function xPanelsOff(){ xPanel(0); xPanel(1); }
+function xStim(cls){ var b=xEl('x2Stim'); b.className=cls||''; b.innerHTML=''; return b; }
+function xBtn(act,txt,sec){ return '<button class="x2-bt'+(sec?' x2-sec':'')+'" type="button" data-x="'+act+'">'+txt+'</button>'; }
+function xRes(a,b){ return a+' &ndash; '+b; }
+function xRender(){
+  var played=X.n-(X.state==='stim'?1:0), extra=X.on && played>=X_TOTAL && Math.abs(X.pts[0]-X.pts[1])<X_MARGIN, p;
+  for(p=0;p<2;p++){
+    var pts=xZone(p,'.x2-pts');
+    pts.innerHTML=xRes(X.pts[p],X.pts[1-p]);
+    pts.classList.toggle('x2-blink',extra);
+    xZone(p,'.x2-gm').innerHTML=xRes(X.games[p],X.games[1-p]);
+    xZone(p,'.x2-cu').textContent=X.n+'/'+X_TOTAL;
+  }
+}
+function xGameSetup(){ X.seq=X.mode==='gonogo'?buildGonogoTrials(X_TOTAL):[]; X.si=0; }
+function xDraw(){
+  if(X.mode!=='gonogo') return true;
+  return X.si<X.seq.length?X.seq[X.si++]:Math.random()<0.5;   /* cuadros extra tras el 15 */
+}
+function xReset(){ xClear(); X.pts=[0,0]; X.games=[0,0]; X.gameNo=1; X.n=0; X.hist=[]; xPanelsOff(); xFlash(); xStim(); }
+function startX2(){   /* pantalla inicial con la informacion para cada jugador */
+  initAudio();
+  X.mode=gameMode==='gonogo'?'gonogo':'normal';
+  xReset(); X.on=false; X.state='intro'; X.ready=[false,false];
+  showScreen('x2'); xEl('x2Stop').style.display='block'; xRender();
+  var gng=X.mode==='gonogo';
+  for(var p=0;p<2;p++) xPanel(p,'<div class="x2-pt">Jugador '+(p+1)+(gng?' &middot; Go/NoGo':'')+'</div>'
+    +'<div class="x2-pr">Uno contra uno, al mejor de 3 juegos de 15 puntos.<br>Si al llegar a 15 no hay 2 de diferencia, se sigue hasta conseguirla.</div>'
+    +(gng?'<div class="x2-rules"><b>Rojo</b>: pulsa. <b>Amarillo</b>: no pulses; si pulsas, -1 para ti y +1 para el rival.</div>':'')
+    +xBtn('start','Empezar'));
+}
+function xReady(p,b,a){   /* Empezar/Continuar: arranca cuando lo han pulsado los dos */
+  X.ready[p]=true; b.disabled=true; b.textContent='Esperando';
+  if(!X.ready[0] || !X.ready[1]) return;
+  X.ready=[false,false];
+  if(a==='start') xBegin(); else xContinue();
+}
+function xBegin(){ xReset(); X.on=true; X.state=''; xGameSetup(); xEl('x2Stop').style.display='block'; xRender(); xLights(); }
+function xContinue(){ X.pts=[0,0]; X.n=0; X.gameNo++; X.state=''; xGameSetup(); xPanelsOff(); xFlash(); xRender(); xLights(); }
+function xLights(){   /* semaforo: 3 luces rojas, se quita una cada 0,8 s y al quitar la tercera empieza */
+  var box=xStim('x2-lights'), n=3;
+  X.state='count';
+  function draw(){ var h='', i; for(i=0;i<n;i++) h+='<i class="x2-lt"></i>'; box.innerHTML=h; }
+  draw();
+  function step(){
+    X.to=setTimeout(function(){ X.to=0; if(!X.on) return; n--; if(n<=0){ box.innerHTML=''; xNext(); return; } draw(); step(); }, 800);
+  }
+  step();
+}
+function xNext(){
+  var box=xStim();
+  X.state='wait';
+  X.to=setTimeout(function(){
+    X.to=0; if(!X.on) return;
+    X.red=xDraw();
+    box.className=X.red?'x2-red':'x2-yellow';
+    X.state='stim'; X.n++; X.t0=performance.now(); xRender();
+    if(!X.red) X.to=setTimeout(function(){ X.to=0; if(!X.on) return; X.state='freeze'; xStim(); xRender(); xAfter(); }, X_NOGO);
+  }, 500+Math.random()*3500);
+}
+function xPress(p){
+  if(!X.on || (X.state!=='wait' && X.state!=='stim')) return;
+  var now=performance.now(), msg=['',''];
+  xClear();
+  if(X.state==='wait'){ X.n++; X.pts[p]--; X.pts[1-p]++; msg[p]='Salida en falso -1'; msg[1-p]='Punto +1'; }
+  else if(X.red){ X.pts[p]++; msg[p]='Punto &middot; '+Math.round(now-X.t0)+' ms'; msg[1-p]='Punto rival'; }
+  else { X.pts[p]--; X.pts[1-p]++; msg[p]='Amarillo -1'; msg[1-p]='Fallo rival +1'; }
+  X.state='freeze';
+  xStim();
+  xFlash(msg[0],msg[1]);
+  xRender();
+  X.to=setTimeout(function(){ X.to=0; xFlash(); xAfter(); }, X_FREEZE);
+}
+function xAfter(){
+  if(!X.on) return;
+  var rem=Math.max(0,X_TOTAL-X.n), d=X.pts[0]-X.pts[1];
+  if(Math.abs(d)-X_SWING*rem>=X_MARGIN){ xGameEnd(d>0?0:1); return; }
+  xNext();
+}
+function xGameEnd(i){
+  var p, h, j;
+  X.games[i]++; X.hist.push([X.pts[0],X.pts[1]]);
+  if(X.games[i]>=X_WINGAMES){
+    X.on=false; X.state='end'; xRender(); xEl('x2Stop').style.display='none';
+    for(p=0;p<2;p++){
+      for(h=[],j=0;j<X.hist.length;j++) h.push(xRes(X.hist[j][p],X.hist[j][1-p]));
+      xPanel(p,'<div class="x2-pt">'+(p===i?'¡Enhorabuena, Jugador '+(p+1)+'!':'Jugador '+(i+1)+' gana el partido')+'</div>'
+        +'<div class="x2-pr">'+(p===i?'Has ganado el partido ':'Resultado ')+xRes(X.games[p],X.games[1-p])+'<br>Juegos: '+h.join(', ')+'</div>'
+        +'<div class="x2-pbs">'+xBtn('home','Inicio',true)+xBtn('again','Repetir')+'</div>');
+    }
+    return;
+  }
+  X.state='between'; X.ready=[false,false]; xRender();
+  for(p=0;p<2;p++) xPanel(p,'<div class="x2-pt">Jugador '+(i+1)+' gana el '+X_ORD[X.gameNo-1]+' juego</div>'
+    +'<div class="x2-pr">Puntos '+xRes(X.pts[p],X.pts[1-p])+'<br>Juegos '+xRes(X.games[p],X.games[1-p])+'</div>'
+    +xBtn('next','Continuar'));
+}
+function xHome(){ xClear(); X.on=false; X.state=''; showScreen('home'); }
+function xStop(){
+  if(X.state==='intro'){ xHome(); return; }
+  xClear(); X.on=false; X.state='end'; xStim(); xFlash(); xRender(); xEl('x2Stop').style.display='none';
+  for(var p=0;p<2;p++) xPanel(p,'<div class="x2-pt">Partida parada</div><div class="x2-pbs">'+xBtn('home','Inicio',true)+xBtn('again','Repetir')+'</div>');
+}
+(function(){
+  var sec=xEl('screen-x2');
+  sec.addEventListener('pointerdown', function(e){
+    var h=e.target.closest ? e.target.closest('.x2-press') : null; if(!h) return;
+    if(e.cancelable) e.preventDefault();
+    xPress(parseInt(h.getAttribute('data-p'),10));
+  }, {passive:false});
+  sec.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('[data-x]') : null; if(!b) return;
+    var a=b.getAttribute('data-x');
+    playClick();
+    if(a==='start' || a==='next') xReady(parseInt(b.closest('.x2-zone').id.slice(3),10),b,a);
+    else if(a==='again') xBegin();
+    else if(a==='home') xHome();
+  });
+  xEl('x2Stop').addEventListener('click', function(){ playClick(); xStop(); });
+})();
+
+function buildGonogoTrials(total){
+  var n=total||totalRounds;var minRed=Math.ceil(n*0.30);
   var arr=[];for(var i=0;i<n;i++) arr.push(Math.random()<0.5);
   var reds=0;for(var k=0;k<n;k++) if(arr[k]) reds++;
   while(reds<minRed){var idxs=[];for(var j=0;j<n;j++) if(!arr[j]) idxs.push(j);if(!idxs.length)break;arr[idxs[Math.floor(Math.random()*idxs.length)]]=true;reds++;}
@@ -1447,6 +1655,7 @@ function buildGonogoTrials(){
   return arr;
 }
 function prepareAndCountdown(){
+  if(xOn){ startX2(); return; }
   saveUserName();
   // Inicializar voz en gesto directo del usuario para Safari iOS
   if(window.speechSynthesis && gameMode==='distractor'){
