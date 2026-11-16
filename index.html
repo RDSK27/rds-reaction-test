@@ -992,7 +992,7 @@ footer {
   <button class="start-btn rank-btn" onclick="showFullRanking()" aria-label="Ranking"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#333333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 13.5v7.5M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 4H4v2a3 3 0 0 0 3 3M17 4h3v2a3 3 0 0 1-3 3"/></svg></button>
 </div>
   </div>
-  <div class="app-ver" style="margin-top:6px;padding-top:0;">v123</div>
+  <div class="app-ver" style="margin-top:6px;padding-top:0;">v124</div>
   <div id="user-name-bar" style="margin-top:8px;">
     <div style="display:flex;width:200px;gap:0;margin:0 auto;">
       <input id="user-ini-input" type="text" maxlength="3" placeholder="INI"
@@ -1739,6 +1739,7 @@ function buildGonogoTrials(total){
 }
 function prepareAndCountdown(){
   if(xOn){ startX2(); return; }
+  if(!rdsIniOk()) return;
   saveUserName();
   // Inicializar voz en gesto directo del usuario para Safari iOS
   if(window.speechSynthesis && gameMode==='distractor'){
@@ -3018,7 +3019,22 @@ function rxUpdateRankSaveBtn(){
     }
   }catch(e){}
   }
-  if(document.readyState==='complete') applyUrlIdentity(); else window.addEventListener('load', applyUrlIdentity);
+  /* 2026-11-16: la identidad que llega de SuiteRDS (?ini=&dep=) se aplica UNA vez y se quita de la direccion: antes, cada recarga
+     (p. ej. al actualizarse la app sola) volvia a poner ese nombre encima de lo que hubiera escrito el deportista. */
+  function rdsUrlOnce(){
+    applyUrlIdentity();
+    try{ var u=new URL(location.href); if(u.searchParams.has('ini')||u.searchParams.has('dep')){ u.searchParams.delete('ini'); u.searchParams.delete('dep'); var q=u.searchParams.toString(); history.replaceState(history.state,'',u.pathname+(q?'?'+q:'')+u.hash); } }catch(e){}
+  }
+  if(document.readyState==='complete') rdsUrlOnce(); else window.addEventListener('load', rdsUrlOnce);
+  /* 2026-11-16: iniciales obligatorias. Sin ellas se guardaba "RDS" (y con el deporte por defecto, RDS-OTR). */
+  window.rdsIniOk=function(){
+    var el=document.getElementById('user-ini-input')||document.getElementById('home-initials'); if(!el) return true;
+    if((el.value||'').replace(/[^A-Za-z]/g,'')) return true;
+    el.style.outline='3px solid #e23b2e'; el.style.outlineOffset='1px'; el.placeholder='\u00a1INI!';
+    if(!el._rdsIni){ el._rdsIni=1; el.addEventListener('input', function(){ if(el.value){ el.style.outline=''; el.placeholder='INI'; } }); }
+    try{ el.scrollIntoView({block:'center'}); }catch(e){} try{ el.focus(); }catch(e){}
+    return false;
+  };
 })();
 </script>
 <script type="module">
